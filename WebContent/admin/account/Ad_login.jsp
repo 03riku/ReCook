@@ -68,7 +68,6 @@
         <div class="login-title">ログイン</div>
 
         <%
-            // Lấy thông báo lỗi từ THAM SỐ TRUY VẤN (Query Parameter)
             String errorParam = request.getParameter("error");
             String errorMsg = null;
 
