@@ -4,28 +4,34 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
+import bean.CookMenu;
 import bean.GeneralUser;
 
 public class UserDAO {
 
-    // ■ データベース接続メソッド（直接記述方式）
+    // ■ データベース接続メソッド
     private Connection getConnection() throws Exception {
         // H2データベースのドライバクラスをロード
         Class.forName("org.h2.Driver");
 
-        // 接続情報（画像の通りに設定）
+        // 接続情報
         String url = "jdbc:h2:tcp://localhost/~/Re.Cook";
-        String user = "sa";     // デフォルトユーザー名
-        String password = "";   // デフォルトパスワード（空文字）
+        String user = "sa";     // ユーザー名
+        String password = "";   // パスワード
 
         // 接続を確立して返す
         return DriverManager.getConnection(url, user, password);
     }
 
-    // ■ 新規登録用：ユーザーをDBに保存する
+    // ======================================================
+    // ユーザー関連（ログイン・登録）
+    // ======================================================
+
+    // ■ 新規登録用
     public boolean registerUser(String email, String password, String name) throws Exception {
-        // USER_IDは自動採番(AUTO_INCREMENT)と想定
         String sql = "INSERT INTO GENERAL_USER (EMAIL, USER_PASSWORD, ACCOUNT_NAME) VALUES (?, ?, ?)";
 
         try (Connection con = getConnection();
@@ -40,7 +46,7 @@ public class UserDAO {
         }
     }
 
-    // ■ ログイン用：メールとパスワードが一致するユーザーを探す
+    // ■ ログイン用
     public GeneralUser checkLogin(String email, String password) throws Exception {
         String sql = "SELECT * FROM GENERAL_USER WHERE EMAIL = ? AND USER_PASSWORD = ?";
 
@@ -52,7 +58,6 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // 見つかった場合、そのユーザー情報をBeanに入れて返す
                 GeneralUser user = new GeneralUser();
                 user.setUserId(rs.getInt("USER_ID"));
                 user.setEmail(rs.getString("EMAIL"));
@@ -60,7 +65,62 @@ public class UserDAO {
                 user.setAccountName(rs.getString("ACCOUNT_NAME"));
                 return user;
             }
-            return null; // 見つからなかった場合
+            return null;
         }
+    }
+
+    // ======================================================
+    // 料理メニュー関連（検索・詳細取得）
+    // ======================================================
+
+    // ■ 料理検索メソッド
+    public List<CookMenu> searchCookMenu(String keyword) throws Exception {
+        List<CookMenu> list = new ArrayList<>();
+        // DISH_NAME カラムに対して、あいまい検索を行う
+        String sql = "SELECT * FROM COOK_MENU WHERE DISH_NAME LIKE ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                CookMenu menu = new CookMenu();
+                // データベースから取得した値をBeanにセット
+                menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
+                menu.setDishName(rs.getString("DISH_NAME"));      // ★ここをsetDishNameに統一
+                menu.setDescription(rs.getString("DESCRIPTION"));  // ★ここをsetDescriptionに統一
+
+                list.add(menu);
+            }
+        }
+        return list;
+    }
+
+    // ■ 料理詳細取得メソッド
+    public CookMenu getCookMenuById(int id) throws Exception {
+        CookMenu menu = null;
+        String sql = "SELECT * FROM COOK_MENU WHERE MENU_ITEM_ID = ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                menu = new CookMenu();
+                menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
+                menu.setDishName(rs.getString("DISH_NAME"));      // ★ここをsetDishNameに統一
+                menu.setDescription(rs.getString("DESCRIPTION"));  // ★ここをsetDescriptionに統一
+
+                // 必要であればクーポンID等も取得
+                menu.setCouponId(rs.getInt("COUPON_ID"));
+                menu.setFavoriteId(rs.getInt("FAVORITE_ID"));
+                menu.setStoreId(rs.getInt("STORE_ID"));
+            }
+        }
+        return menu;
     }
 }

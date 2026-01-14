@@ -10,25 +10,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import bean.CookMenu;
-import dao.CookMenuDAO;
+import dao.UserDAO; // ★ここがUserDAOになっていることを確認
 
 @WebServlet("/user/Search")
 public class SearchServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         String keyword = request.getParameter("keyword");
-
         try {
-            CookMenuDAO dao = new CookMenuDAO();
-            List<CookMenu> list = dao.search(keyword);
+            UserDAO dao = new UserDAO();
+            // ★UserDAOに作った検索メソッドを呼ぶ
+            List<CookMenu> list = dao.searchCookMenu(keyword);
 
-            // 検索結果のリストをリクエストスコープにセット
             request.setAttribute("menuList", list);
-
-            // 検索結果表示用JSPへ転送
             request.getRequestDispatcher("/user/main/Us_Recipes.jsp").forward(request, response);
-
         } catch (Exception e) {
             e.printStackTrace();
         }

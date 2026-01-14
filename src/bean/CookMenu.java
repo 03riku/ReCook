@@ -3,40 +3,31 @@ package bean;
 import java.io.Serializable;
 
 public class CookMenu implements Serializable {
+    private int menuItemId;
+    private String dishName;
+    private String description;
+    private int couponId;
+    private int favoriteId;
+    private int storeId;
 
-	// フィールド（DAOで取得しているカラムに対応）
-	private int menuItemId;   // MENU_ITEM_ID
-	private String menuName;  // MENU_NAME
-	private int cookTime;     // COOK_TIME
-	// 必要であれば画像パスなどのフィールドも追加してください
-	// private String image;
+    // --- ゲッターとセッター ---
 
-	// コンストラクタ
-	public CookMenu() {}
+    public int getMenuItemId() { return menuItemId; }
+    public void setMenuItemId(int menuItemId) { this.menuItemId = menuItemId; }
 
-	// ■■■ ゲッターとセッター ■■■
+    public String getDishName() { return dishName; }
+    public void setDishName(String dishName) { this.dishName = dishName; }
 
-	// menuItemId
-	public int getMenuItemId() {
-		return menuItemId;
-	}
-	public void setMenuItemId(int menuItemId) {
-		this.menuItemId = menuItemId;
-	}
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-	// menuName
-	public String getMenuName() {
-		return menuName;
-	}
-	public void setMenuName(String menuName) {
-		this.menuName = menuName;
-	}
+    // ★ これらが不足していたためエラーが出ていました
+    public int getCouponId() { return couponId; }
+    public void setCouponId(int couponId) { this.couponId = couponId; }
 
-	// cookTime
-	public int getCookTime() {
-		return cookTime;
-	}
-	public void setCookTime(int cookTime) {
-		this.cookTime = cookTime;
-	}
+    public int getFavoriteId() { return favoriteId; }
+    public void setFavoriteId(int favoriteId) { this.favoriteId = favoriteId; }
+
+    public int getStoreId() { return storeId; }
+    public void setStoreId(int storeId) { this.storeId = storeId; }
 }

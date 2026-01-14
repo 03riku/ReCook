@@ -2,138 +2,121 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<%-- 店舗名を受け取る（パラメータがない場合はデフォルトでOO店） --%>
-<c:set var="storeName" value="${param.storeName}" />
-<c:if test="${empty storeName}">
-	<c:set var="storeName" value="OO店" />
-</c:if>
-
-<%-- タイトル設定（ヘッダーに表示される文字） --%>
-<c:set var="pageTitle" value="${storeName}" scope="request" />
+<%-- タイトル設定 --%>
+<c:set var="pageTitle" value="お得情報・クーポン" scope="request" />
 
 <%-- 画面の中身を設定 --%>
 <c:set var="pageBody" scope="request">
 
-	<%-- ★この画面専用のスタイル --%>
 	<style>
-		/* ヘッダー色を水色に上書き（設計図の色） */
+		/* ヘッダー色（お得情報なので少し明るい黄色系） */
 		.page-header {
-			background-color: #9fc5e8 !important;
+			background-color: #fff2cc !important;
 		}
 
-		/* レシピリストの枠線スタイル */
-		.recipe-row {
-			border: 1px solid #333;
-			border-top: none; /* 上の線は前の行と重なるので消す */
-			transition: background-color 0.2s;
+		/* クーポンカードのスタイル */
+		.coupon-card {
+			border: 2px dashed #f44336;
+			background-color: #fff5f5;
+			border-radius: 10px;
+			position: relative;
+			overflow: hidden;
 		}
-		/* 最初の行だけ上線をつける */
-		.recipe-link:first-of-type .recipe-row {
-			border-top: 1px solid #333;
+		.coupon-card::before, .coupon-card::after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			width: 20px;
+			height: 20px;
+			background-color: #fff; /* 背景色と同じにして切り取り線風にする */
+			border-radius: 50%;
+			transform: translateY(-50%);
+		}
+		.coupon-card::before { left: -10px; }
+		.coupon-card::after { right: -10px; }
+
+		/* 商品セールのバッジ */
+		.sale-badge {
+			background-color: #f44336;
+			color: white;
+			padding: 2px 8px;
+			border-radius: 5px;
+			font-size: 0.8rem;
+			font-weight: bold;
 		}
 
-		/* ホバー時の挙動 */
-		.recipe-link:hover .recipe-row {
-			background-color: #f8f9fa !important; /* 薄いグレー */
-		}
-
-		/* 画像プレースホルダー */
-		.recipe-img-placeholder {
-			width: 100%;
-			height: 90px;
+		/* 商品画像ダミー */
+		.product-img {
+			width: 60px;
+			height: 60px;
 			background-color: #eee;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			color: #aaa;
-			font-size: 0.8rem;
-			object-fit: cover;
-		}
-
-		/* 設計図にある「値引き商品は赤色」のスタイル */
-		.discount-text {
-			color: #ff0000; /* 赤色 */
-			font-weight: bold;
+			border-radius: 5px;
 		}
 	</style>
 
-	<div class="container py-0" style="max-width: 500px;">
+	<div class="container py-4 px-3" style="max-width: 500px; padding-bottom: 100px !important;">
 
-		<%-- サブヘッダー --%>
-		<div class="text-center py-2 border border-dark border-bottom-0 bg-white mt-3">
-			<h6 class="mb-0">値引き商品を使ったレシピ</h6>
+		<%-- ■ セクション1：利用可能なクーポン --%>
+		<h6 class="fw-bold mb-3"><i class="fas fa-ticket-alt text-danger"></i> 利用可能なクーポン</h6>
+
+		<div class="coupon-card p-3 mb-4 shadow-sm">
+			<div class="row align-items-center">
+				<div class="col-8">
+					<div class="small text-muted">Re.Cook 利用特典</div>
+					<div class="fw-bold text-danger fs-5">全品 10% OFF</div>
+					<div class="small text-muted">有効期限：2024/12/31</div>
+				</div>
+				<div class="col-4 text-end">
+					<button class="btn btn-sm btn-danger rounded-pill px-3">使用中</button>
+				</div>
+			</div>
 		</div>
 
-		<%-- ■■■ レシピリスト ■■■ --%>
-		<%-- 各レシピを <a> タグで囲んでクリック可能にしています --%>
+		<%-- ■ セクション2：本日のセール商品（DISCOUNTED_PRODUCT想定） --%>
+		<h6 class="fw-bold mb-3"><i class="fas fa-shopping-cart text-primary"></i> 本日の特売品</h6>
 
-		<%-- 1. ビーフシチュー --%>
-		<a href="${pageContext.request.contextPath}/user/main/Us_Coupon.jsp?recipeName=簡単！ビーフシチュー" class="text-decoration-none text-dark recipe-link">
-			<div class="row g-0 recipe-row bg-white p-2 align-items-center">
-				<%-- 画像エリア --%>
-				<div class="col-4">
-					<div class="recipe-img-placeholder border">
-						<i class="fas fa-utensils fa-2x"></i>
-					</div>
-				</div>
-				<%-- 詳細エリア --%>
-				<div class="col-8 ps-3 text-start">
-					<div class="fw-bold">ビーフシチュー <span class="small fw-normal ms-1"><i class="far fa-clock"></i> 所要時間40分</span></div>
-					<div class="small mt-1">
-						<%-- 牛肉が赤字 --%>
-						・<span class="discount-text">牛肉</span>　・にんじん　・玉ねぎ<br>
-						・じゃがいも　・ブロッコリー
-					</div>
-				</div>
+		<div class="card shadow-sm border-0 mb-3">
+			<div class="card-body p-0">
+				<ul class="list-group list-group-flush">
+					<%-- ここは本来 c:forEach で回す部分 --%>
+					<li class="list-group-item d-flex align-items-center py-3">
+						<div class="product-img me-3">
+							<i class="fas fa-drumstick-bite text-muted"></i>
+						</div>
+						<div class="flex-grow-1">
+							<div class="fw-bold">国産若鶏もも肉</div>
+							<div class="text-danger fw-bold">100g / ¥98 <span class="sale-badge">20%OFF</span></div>
+						</div>
+					</li>
+					<li class="list-group-item d-flex align-items-center py-3">
+						<div class="product-img me-3">
+							<i class="fas fa-leaf text-muted"></i>
+						</div>
+						<div class="flex-grow-1">
+							<div class="fw-bold">北海道産たまねぎ</div>
+							<div class="text-danger fw-bold">3玉 / ¥158 <span class="sale-badge">SALE</span></div>
+						</div>
+					</li>
+					<li class="list-group-item d-flex align-items-center py-3">
+						<div class="product-img me-3">
+							<i class="fas fa-egg text-muted"></i>
+						</div>
+						<div class="flex-grow-1">
+							<div class="fw-bold">特選たまご（10個入）</div>
+							<div class="text-danger fw-bold">¥198 <span class="sale-badge">目玉商品</span></div>
+						</div>
+					</li>
+				</ul>
 			</div>
-		</a>
+		</div>
 
-		<%-- 2. えび炒飯 --%>
-		<a href="${pageContext.request.contextPath}/user/main/Us_Coupon.jsp?recipeName=えび炒飯" class="text-decoration-none text-dark recipe-link">
-			<div class="row g-0 recipe-row bg-white p-2 align-items-center">
-				<div class="col-4">
-					<div class="recipe-img-placeholder border">
-						<i class="fas fa-utensils fa-2x"></i>
-					</div>
-				</div>
-				<div class="col-8 ps-3 text-start">
-					<div class="fw-bold">えび炒飯 <span class="small fw-normal ms-1"><i class="far fa-clock"></i> 所要時間20分</span></div>
-					<div class="small mt-1">
-						・えび　・卵　・米<br>
-						<%-- ニンニクが赤字 --%>
-						・白ネギ　・<span class="discount-text">ニンニク</span>
-					</div>
-				</div>
-			</div>
-		</a>
-
-		<%-- 3. エビチリ --%>
-		<a href="${pageContext.request.contextPath}/user/main/Us_Coupon.jsp?recipeName=エビチリ" class="text-decoration-none text-dark recipe-link">
-			<div class="row g-0 recipe-row bg-white p-2 align-items-center">
-				<div class="col-4">
-					<div class="recipe-img-placeholder border">
-						<i class="fas fa-utensils fa-2x"></i>
-					</div>
-				</div>
-				<div class="col-8 ps-3 text-start">
-					<div class="fw-bold">エビチリ <span class="small fw-normal ms-1"><i class="far fa-clock"></i> 所要時間50分</span></div>
-					<div class="small mt-1">
-						<%-- えびが赤字 --%>
-						・<span class="discount-text">えび</span>　・ぱせり・チリソース<br>
-						・鳥そぼろ
-					</div>
-				</div>
-			</div>
-		</a>
-
-		<%-- 下部の注釈 --%>
-		<div class="border border-dark border-top-0 p-2 bg-white text-center">
-			<p class="small mb-1 text-muted" style="font-size: 0.75rem;">
-				※値引き商品が売り切れた場合でもクーポンはご利用できます
-			</p>
-			<p class="small mb-0 fw-bold" style="font-size: 0.8rem;">
-				値引きされている商品は赤色で表示されています
-			</p>
+		<%-- 注意書き --%>
+		<div class="alert alert-light border small text-muted">
+			※セールの内容は店舗によって異なる場合があります。<br>
+			※クーポンは会計時に画面をご提示ください。
 		</div>
 
 	</div>
@@ -144,7 +127,7 @@
 		<a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">検索</a>
 		<a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">料理提案</a>
 
-		<%-- ★現在地：店舗（黄色ハイライト） --%>
+		<%-- 現在地：店舗（お得情報）なので黄色ハイライト --%>
 		<a href="${pageContext.request.contextPath}/user/main/Us_Store.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">
 			<div>店舗</div>
 			<div class="mt-1 mx-auto" style="background-color: #ffff00; height: 5px; width: 80%;"></div>
