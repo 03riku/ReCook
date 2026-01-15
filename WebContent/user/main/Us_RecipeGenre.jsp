@@ -50,6 +50,19 @@
 		</div>
 	</div>
 
-	<%-- ナビゲーションバー (省略) --%>
+	<%-- 下部固定ナビゲーション --%>
+	<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2">
+		<a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">ホーム</a>
+
+		<a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">検索</a>
+		<a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">
+		<div>料理提案</div>
+			<div class="mt-1 mx-auto" style="background-color: #d9ead3; height: 5px; width: 70%;"></div>
+			</a>
+		<%-- ★修正：店舗リンク (Servletを通す) --%>
+		<a href="${pageContext.request.contextPath}/user/StoreList" class="text-dark text-decoration-none text-center" style="min-width: 60px;">店舗</a>
+
+		<a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">アカウント</a>
+	</nav>
 </c:set>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />

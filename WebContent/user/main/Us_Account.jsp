@@ -5,6 +5,10 @@
 
 <c:set var="pageBody" scope="request">
 	<style>
+	 /* ★ページの余白（白い部分）をこの背景色にする */
+    	body {
+      		background: rgb(238, 237, 234) !important;
+    	}
 		.page-header { background-color: #ead1dc !important; }
 		.account-link-box { display: flex; align-items: center; justify-content: center; height: 150px; background-color: #ffffff; border: 1px solid #333; color: #333; font-size: 1.5rem; text-decoration: none; transition: background-color 0.2s; }
 		.account-link-box:hover { background-color: #f0f0f0; color: #333; }

@@ -10,6 +10,26 @@
 
 	<%-- ★この画面専用のスタイル --%>
 	<style>
+	    /* ★ページの余白（白い部分）をこの背景色にする */
+    	body {
+      		background: rgb(238, 237, 234) !important;
+    	}
+
+    	/* ★ロゴの枠（黒い囲い） */
+		.logo-box{
+			border: 2px solid #000;     /* 黒枠 */
+			background: #fff;           /* ロゴの後ろを白に（見やすい） */
+			padding: 18px 22px;         /* ロゴ周りの余白 */
+			display: inline-block;      /* ロゴのサイズに合わせて枠が付く */
+			border-radius: 8px;         /* 角丸（不要なら消す） */
+		}
+
+		/* ★ロゴ画像を大きくする */
+		.logo-img{
+			max-height: 140px;          /* ここを大きく/小さくで調整 */
+			width: auto;
+		}
+
 		/* ヘッダー色をピンク/オレンジ系に（設計図のイメージ） */
 		.page-header {
 			background-color: #ffe5d9 !important;
@@ -28,10 +48,12 @@
 
 	<div class="container py-5" style="max-width: 400px;">
 
-		<%-- ロゴ表示 --%>
+		<%-- ロゴ表示（★枠つき＆大きめ） --%>
 		<div class="text-center mb-5">
-			<img src="${pageContext.request.contextPath}/pic/recook_logo.png"
-				 alt="Re.Cook" class="img-fluid" style="max-height: 80px;">
+			<div class="logo-box">
+				<img src="${pageContext.request.contextPath}/pic/recook_logo.png"
+					 alt="Re.Cook" class="img-fluid logo-img">
+			</div>
 		</div>
 
 		<%-- エラーメッセージ表示エリア --%>

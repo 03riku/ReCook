@@ -10,6 +10,11 @@
 
 	<%-- スタイル設定 --%>
 	<style>
+	    /* ★ページの余白（白い部分）をこの背景色にする */
+    	body {
+      		background: rgb(238, 237, 234) !important;
+    	}
+
 		.page-header {
 			background-color: #ffe5d9 !important; /* 薄いオレンジ */
 		}
