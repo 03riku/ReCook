@@ -6,6 +6,7 @@ public class CookMenu implements Serializable {
     private int menuItemId;
     private String dishName;
     private String description;
+    private int cookTime; // ★追加：調理時間用
     private int couponId;
     private int favoriteId;
     private int storeId;
@@ -21,7 +22,10 @@ public class CookMenu implements Serializable {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    // ★ これらが不足していたためエラーが出ていました
+    // ★追加：cookTimeのゲッター・セッター
+    public int getCookTime() { return cookTime; }
+    public void setCookTime(int cookTime) { this.cookTime = cookTime; }
+
     public int getCouponId() { return couponId; }
     public void setCouponId(int couponId) { this.couponId = couponId; }
 

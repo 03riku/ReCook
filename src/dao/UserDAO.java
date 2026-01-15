@@ -70,7 +70,7 @@ public class UserDAO {
     }
 
     // ======================================================
-    // 料理メニュー関連（検索・詳細取得）
+    // 料理メニュー関連（検索・詳細取得・お気に入り）
     // ======================================================
 
     // ■ 料理検索メソッド
@@ -87,11 +87,11 @@ public class UserDAO {
 
             while (rs.next()) {
                 CookMenu menu = new CookMenu();
-                // データベースから取得した値をBeanにセット
                 menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
-                menu.setDishName(rs.getString("DISH_NAME"));      // ★ここをsetDishNameに統一
-                menu.setDescription(rs.getString("DESCRIPTION"));  // ★ここをsetDescriptionに統一
-
+                menu.setDishName(rs.getString("DISH_NAME"));
+                menu.setDescription(rs.getString("DESCRIPTION"));
+                menu.setCookTime(rs.getInt("COOK_TIME"));
+                menu.setFavoriteId(rs.getInt("FAVORITE_ID"));
                 list.add(menu);
             }
         }
@@ -112,15 +112,59 @@ public class UserDAO {
             if (rs.next()) {
                 menu = new CookMenu();
                 menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
-                menu.setDishName(rs.getString("DISH_NAME"));      // ★ここをsetDishNameに統一
-                menu.setDescription(rs.getString("DESCRIPTION"));  // ★ここをsetDescriptionに統一
-
-                // 必要であればクーポンID等も取得
+                menu.setDishName(rs.getString("DISH_NAME"));
+                menu.setDescription(rs.getString("DESCRIPTION"));
+                menu.setCookTime(rs.getInt("COOK_TIME"));
                 menu.setCouponId(rs.getInt("COUPON_ID"));
                 menu.setFavoriteId(rs.getInt("FAVORITE_ID"));
                 menu.setStoreId(rs.getInt("STORE_ID"));
             }
         }
         return menu;
+    }
+
+    // ■ お気に入りの状態を切り替えるメソッド (1:未登録 ⇔ 2:登録済)
+    public boolean toggleFavorite(int menuItemId) throws Exception {
+        // 現在の状態を取得
+        CookMenu currentMenu = getCookMenuById(menuItemId);
+        if (currentMenu == null) return false;
+
+        // 現在が1なら2へ、2なら1へ切り替える
+        int newFavoriteId = (currentMenu.getFavoriteId() == 1) ? 2 : 1;
+
+        String sql = "UPDATE COOK_MENU SET FAVORITE_ID = ? WHERE MENU_ITEM_ID = ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, newFavoriteId);
+            ps.setInt(2, menuItemId);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        }
+    }
+
+    // ■ お気に入り一覧取得メソッド (FAVORITE_ID = 2 のものだけ取得)
+    public List<CookMenu> getFavoriteMenus() throws Exception {
+        List<CookMenu> list = new ArrayList<>();
+        String sql = "SELECT * FROM COOK_MENU WHERE FAVORITE_ID = 2";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                CookMenu menu = new CookMenu();
+                menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
+                menu.setDishName(rs.getString("DISH_NAME"));
+                menu.setDescription(rs.getString("DESCRIPTION"));
+                menu.setCookTime(rs.getInt("COOK_TIME"));
+                menu.setFavoriteId(rs.getInt("FAVORITE_ID"));
+                list.add(menu);
+            }
+        }
+        return list;
     }
 }
