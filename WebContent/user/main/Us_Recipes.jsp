@@ -1,16 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<c:set var="pageTitle" value="検索結果" scope="request" />
+<c:set var="pageTitle" value="${pageTitle}" scope="request" />
 
 <c:set var="pageBody" scope="request">
     <div class="container py-4">
-        <h5 class="mb-4">検索結果：${menuList.size()} 件</h5>
+        <h5 class="mb-4">結果：${menuList.size()} 件</h5>
 
         <div class="list-group">
             <c:forEach var="item" items="${menuList}">
-                <%-- ★ここが重要：item.menuName ではなく item.dishName にする --%>
-                <a href="${pageContext.request.contextPath}/user/MenuDetail?id=${item.menuItemId}"
+                <%-- ★ fromStore=${fromStore} を追加 --%>
+                <a href="${pageContext.request.contextPath}/user/MenuDetail?id=${item.menuItemId}&fromStore=${fromStore}"
                    class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h6 class="mb-1">${item.dishName}</h6>
