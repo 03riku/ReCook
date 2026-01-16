@@ -4,6 +4,13 @@
 <c:set var="pageTitle" value="ホーム" scope="request" />
 
 <c:set var="pageBody" scope="request">
+	<style>
+		/* ★ページの余白（白い部分）をこの背景色にする */
+		html, body {
+			background: rgb(238, 237, 234) !important;
+			min-height: 100%;
+		}
+	</style>
 	<div class="container text-center py-5" style="max-width: 500px;">
 
 		<%-- ロゴ画像エリア --%>
@@ -55,7 +62,7 @@
 	<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2">
 		<a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">
 			<div>ホーム</div>
-			<div class="mt-1 mx-auto" style="background-color: #c9daf8; height: 5px; width: 70%;"></div>
+			<div class="mt-1 mx-auto" style="background-color: #ffe5d9; height: 5px; width: 70%;"></div>
 		</a>
 		<a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">検索</a>
 		<a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp" class="text-dark text-decoration-none text-center" style="min-width: 60px;">料理提案</a>

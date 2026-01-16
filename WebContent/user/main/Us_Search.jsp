@@ -5,6 +5,21 @@
 
 <c:set var="pageBody" scope="request">
     <style>
+     	/* ★ページの余白（白い部分）をこの背景色にする */
+    	body {
+      		background: rgb(238, 237, 234) !important;
+    	}
+
+    	/* ★ロゴの枠（黒い囲い） */
+		.logo-box{
+			border: 2px solid #000;     /* 黒枠 */
+			background: #fff;           /* ロゴの後ろを白に（見やすい） */
+			padding: 18px 22px;         /* ロゴ周りの余白 */
+			display: inline-block;      /* ロゴのサイズに合わせて枠が付く */
+			border-radius: 8px;         /* 角丸（不要なら消す） */
+		}
+
+
         .page-header { background-color: #c9daf8 !important; }
         .search-input-group { border: 2px solid #28a745; border-radius: 10px; overflow: hidden; background-color: #fff; }
         .search-input { border: none !important; height: 55px; font-size: 1.2rem; box-shadow: none !important; }
