@@ -15,7 +15,6 @@ public class Login_Controller extends CommonServlet {
 
     @Override
     protected void get(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        // Luôn chuyển hướng đến trang đăng nhập nếu truy cập bằng GET
         resp.sendRedirect(req.getContextPath() + "/admin/account/Ad_login.jsp");
     }
 
@@ -23,7 +22,6 @@ public class Login_Controller extends CommonServlet {
     protected void post(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        // 1. Lấy và kiểm tra tham số (Khắc phục NullPointerException)
         String adminIdStr = request.getParameter("username") != null ?
                             request.getParameter("username").trim() : "";
 
@@ -31,9 +29,8 @@ public class Login_Controller extends CommonServlet {
                            request.getParameter("password").trim() : "";
 
         String redirectURL;
-        String contextPath = request.getContextPath(); // Lấy Context Path một lần
+        String contextPath = request.getContextPath();
 
-        // 2. Kiểm tra trường trống (Logic đã ổn)
         if (adminIdStr.isEmpty() || adminPass.isEmpty()) {
              redirectURL = contextPath + "/admin/account/Ad_login.jsp?error=emptyfields";
              response.sendRedirect(redirectURL);
@@ -44,33 +41,27 @@ public class Login_Controller extends CommonServlet {
             int adminId = Integer.parseInt(adminIdStr);
 
             AdminDAO dao = new AdminDAO();
-            Admin admin = dao.findAdmin(adminId, adminPass); // Giả định AdminDAO hoạt động đúng
+            Admin admin = dao.findAdmin(adminId, adminPass);
 
             if (admin != null) {
-                // Đăng nhập thành công
                 HttpSession session = request.getSession();
                 session.setAttribute("currentAdmin", admin);
 
-                // Đường dẫn thành công: Đảm bảo khớp với WebContent/admin/product/Ad_product.jsp
-                redirectURL = contextPath + "/admin/product/Ad_Product.jsp";
+                redirectURL = contextPath + "/product/Admin_ProductServlet";
                 response.sendRedirect(redirectURL);
                 return;
 
             } else {
-                // Đăng nhập thất bại (ID/Pass không khớp)
                 redirectURL = contextPath + "/admin/account/Ad_login.jsp?error=invalid";
             }
 
         } catch (NumberFormatException e) {
-            // Lỗi ID không phải là số
             redirectURL = contextPath + "/admin/account/Ad_login.jsp?error=notnumber";
 
         } catch (Exception e) {
-            // Lỗi hệ thống/CSDL (Được bắt bởi CommonServlet và hiển thị)
             throw e;
         }
 
-        // Redirect cho trường hợp thất bại (Đã được gán redirectURL)
         response.sendRedirect(redirectURL);
     }
 }
