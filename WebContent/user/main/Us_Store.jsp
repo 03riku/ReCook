@@ -9,7 +9,6 @@
         body { background: rgb(238, 237, 234) !important; }
         .page-header { background-color: #fff2cc !important; }
 
-        /* 検索バーのスタイル */
         .store-search-group {
             border: 2px solid #333;
             border-radius: 10px;
@@ -22,17 +21,21 @@
             height: 45px;
         }
 
+        /* ★ボタン自体に枠線をつける */
         .store-box {
             display: flex; align-items: flex-end; justify-content: center;
-            height: 150px; width: 100%; border: 0.5px solid #000;
+            height: 150px; width: 100%;
+            border: 1px solid #000; /* 各ボックスに個別の枠線 */
             color: #333; font-size: 1.2rem; text-decoration: none;
             padding-bottom: 20px; transition: opacity 0.2s;
+            margin-bottom: -1px; /* 枠の重なりを調整 */
+            margin-right: -1px;
         }
         .store-box:hover { opacity: 0.8; color: #333; }
-        .bg-blue { background-color: #9fc5e8; }
-        .bg-white { background-color: #ffffff; }
 
-        /* 下部ナビ用スタイル */
+        .bg-blue { background-color: #9fc5e8 !important; }
+        .bg-white { background-color: #ffffff !important; }
+
         .bottom-nav a{ position: relative; padding-bottom: 10px; }
         .bottom-nav a::after{
             content: ""; position: absolute; left: 50%; bottom: 2px; width: 70%; height: 5px;
@@ -49,7 +52,7 @@
 
     <div class="container py-3" style="max-width: 500px;">
 
-        <!-- ★店舗検索フォーム -->
+        <!-- 店舗検索フォーム -->
         <div class="row justify-content-center px-3 mb-4">
             <div class="col-12 px-0">
                 <form action="${pageContext.request.contextPath}/user/StoreList" method="get">
@@ -64,8 +67,8 @@
             </div>
         </div>
 
-        <!-- 店舗一覧表示 -->
-        <div class="row g-0 border border-dark">
+        <!-- ★ row から border border-dark を削除して「空の枠」が出ないようにしました -->
+        <div class="row g-0">
             <c:forEach var="s" items="${storeList}" varStatus="status">
                 <div class="col-6">
                     <a href="${pageContext.request.contextPath}/user/StoreMenu?id=${s.storeId}"
