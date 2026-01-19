@@ -88,7 +88,7 @@ public class SuperLoginServlet extends HttpServlet {
             session.setAttribute("storeName", storeName);
 
             // メニュー画面へ移動（Sp_Menu.jspはsuperフォルダ直下にあるため、パスを修正）
-            response.sendRedirect(request.getContextPath() + "/super/Sp_Menu.jsp");
+            response.sendRedirect(request.getContextPath() + "/super/item/Sp_Item.jsp");
         } else {
             // 失敗：エラーメッセージをセットして元のログイン画面に戻す
             request.setAttribute("errorMsg", "店舗IDまたはパスワードが正しくありません。");
