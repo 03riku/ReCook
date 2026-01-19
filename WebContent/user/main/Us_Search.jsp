@@ -80,7 +80,7 @@
     .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
     .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
     .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
-    .bottom-nav a.bar-store   { --bar-color:#ffff00; }
+    .bottom-nav a.bar-store   { --bar-color:#fff2cc; }
     .bottom-nav a.bar-account { --bar-color:#ead1dc; }
   </style>
 

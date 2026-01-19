@@ -50,7 +50,7 @@
         .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：ピンク */
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; } /* 検索：青 */
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; } /* 料理提案：緑 */
-        .bottom-nav a.bar-store   { --bar-color:#ffff00; } /* 店舗：黄 */
+        .bottom-nav a.bar-store   { --bar-color:#fff2cc; } /* 店舗：黄 */
         .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：ピンク */
 	</style>
 
@@ -67,27 +67,27 @@
 
 	<%-- 下部固定ナビゲーション --%>
 	<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
-  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
-     class="text-dark text-decoration-none text-center bar-home"
-     style="min-width: 60px;">ホーム</a>
+	  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
+	     class="text-dark text-decoration-none text-center bar-home"
+	     style="min-width: 60px;">ホーム</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
-     class="text-dark text-decoration-none text-center bar-search"
-     style="min-width: 60px;">検索</a>
+	  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
+	     class="text-dark text-decoration-none text-center bar-search"
+	     style="min-width: 60px;">検索</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-     class="text-dark text-decoration-none text-center bar-recipe"
-     style="min-width: 60px;">料理提案</a>
+	  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
+	     class="text-dark text-decoration-none text-center bar-recipe"
+	     style="min-width: 60px;">料理提案</a>
 
-  <a href="${pageContext.request.contextPath}/user/StoreList"
-     class="text-dark text-decoration-none text-center bar-store"
-     style="min-width: 60px;">店舗</a>
+	  <a href="${pageContext.request.contextPath}/user/StoreList"
+	     class="text-dark text-decoration-none text-center bar-store"
+	     style="min-width: 60px;">店舗</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-   class="text-dark text-decoration-none text-center bar-account active"
-   style="min-width: 60px;">アカウント</a>
+	  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
+	   class="text-dark text-decoration-none text-center bar-account active"
+	   style="min-width: 60px;">アカウント</a>
 
-</nav>
+	</nav>
 
 </c:set>
 

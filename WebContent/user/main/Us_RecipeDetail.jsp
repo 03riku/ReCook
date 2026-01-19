@@ -53,7 +53,7 @@
         .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：薄いピンク */
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; } /* 検索：青 */
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; } /* 料理提案：緑 */
-        .bottom-nav a.bar-store   { --bar-color:#ffff00; } /* 店舗：黄 */
+        .bottom-nav a.bar-store   { --bar-color:#fff2cc; } /* 店舗：黄 */
         .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：ピンク */
     	}
 
