@@ -13,7 +13,6 @@ import bean.User_Store;
 
 public class UserDAO {
 
-    // ■ データベース接続メソッド
     private Connection getConnection() throws Exception {
         Class.forName("org.h2.Driver");
         String url = "jdbc:h2:tcp://localhost/~/Re.Cook";
@@ -22,17 +21,11 @@ public class UserDAO {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // ======================================================
-    // ユーザー関連（ログイン・登録）
-    // ======================================================
-
-    // ■ ログインチェック（★このメソッドが足りないためにエラーが出ていました）
+    // --- ユーザー関連 ---
     public GeneralUser checkLogin(String email, String password) throws Exception {
         String sql = "SELECT * FROM GENERAL_USER WHERE EMAIL = ? AND USER_PASSWORD = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ps.setString(2, password);
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email); ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 GeneralUser user = new GeneralUser();
@@ -46,28 +39,19 @@ public class UserDAO {
         }
     }
 
-    // ■ 新規登録
     public boolean registerUser(String email, String password, String name) throws Exception {
         String sql = "INSERT INTO GENERAL_USER (EMAIL, USER_PASSWORD, ACCOUNT_NAME) VALUES (?, ?, ?)";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ps.setString(2, password);
-            ps.setString(3, name);
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email); ps.setString(2, password); ps.setString(3, name);
             return ps.executeUpdate() > 0;
         }
     }
 
-    // ======================================================
-    // 料理メニュー関連
-    // ======================================================
-
-    // ■ 料理検索（キーワード）
+    // --- 料理メニュー関連 ---
     public List<CookMenu> searchCookMenu(String keyword) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         String sql = "SELECT * FROM COOK_MENU WHERE DISH_NAME LIKE ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -79,12 +63,10 @@ public class UserDAO {
         return list;
     }
 
-    // ■ 料理詳細（ID指定）
     public CookMenu getCookMenuById(int id) throws Exception {
         CookMenu menu = null;
         String sql = "SELECT * FROM COOK_MENU WHERE MENU_ITEM_ID = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -96,12 +78,10 @@ public class UserDAO {
         return menu;
     }
 
-    // ■ ジャンル別料理取得
     public List<CookMenu> getMenusByGenreId(int genreId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         String sql = "SELECT * FROM COOK_MENU WHERE GENRE_ID = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, genreId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -113,12 +93,10 @@ public class UserDAO {
         return list;
     }
 
-    // ■ 店舗別料理取得
     public List<CookMenu> getMenusByStoreId(int storeId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         String sql = "SELECT * FROM COOK_MENU WHERE STORE_ID = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, storeId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -130,10 +108,7 @@ public class UserDAO {
         return list;
     }
 
-    // ======================================================
-    // お気に入り関連
-    // ======================================================
-
+    // --- お気に入り関連 ---
     public boolean toggleFavorite(int id) throws Exception {
         CookMenu current = getCookMenuById(id);
         if (current == null) return false;
@@ -159,10 +134,7 @@ public class UserDAO {
         return list;
     }
 
-    // ======================================================
-    // 店舗・その他
-    // ======================================================
-
+    // --- 店舗関連（★ここを修正） ---
     public List<User_Store> getAllStores() throws Exception {
         List<User_Store> list = new ArrayList<>();
         String sql = "SELECT * FROM STORE";
@@ -178,7 +150,24 @@ public class UserDAO {
         return list;
     }
 
-    // 各メソッドで共通してBeanに値を詰めるための補助メソッド
+    // ★店舗検索メソッドを追加
+    public List<User_Store> searchStores(String keyword) throws Exception {
+        List<User_Store> list = new ArrayList<>();
+        String sql = "SELECT * FROM STORE WHERE STORE_NAME LIKE ? OR STORE_ADDRESS LIKE ?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User_Store store = new User_Store();
+                store.setStoreId(rs.getInt("STORE_ID"));
+                store.setStoreName(rs.getString("STORE_NAME"));
+                list.add(store);
+            }
+        }
+        return list;
+    }
+
     private void fillCookMenu(CookMenu menu, ResultSet rs) throws Exception {
         menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
         menu.setDishName(rs.getString("DISH_NAME"));
