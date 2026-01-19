@@ -82,14 +82,11 @@
         </div>
 
         <!-- CONTENT BODY -->
-        <!-- Nhờ flex-grow: 1 và overflow: hidden, khu vực này sẽ chiếm hết chiều cao còn lại -->
         <div class="content-body-split">
-            <!-- Cột trái (danh sách) -->
             <div class="content-col-2">
                 <c:out value="${pageContentBody1}" escapeXml="false" />
             </div>
 
-            <!-- Cột phải (form chi tiết) -->
             <div class="content-col-3">
                 <c:out value="${pageContentBody2}" escapeXml="false" />
             </div>

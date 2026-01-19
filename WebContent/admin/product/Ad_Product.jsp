@@ -187,7 +187,6 @@
         document.getElementById('editName').value = name;
         document.getElementById('editCategory').value = category;
 
-        // Ẩn thông báo cũ khi người dùng chọn sản phẩm mới để sửa
         var alerts = document.querySelectorAll('.alert');
         alerts.forEach(function(alert) {
             alert.style.display = 'none';
@@ -247,18 +246,15 @@
     @SuppressWarnings("unchecked")
     List<Product> productList = (List<Product>) request.getAttribute("products");
 
-    // Lấy thông báo từ Servlet
     String message = (String) request.getAttribute("message");
     String error = (String) request.getAttribute("error");
 
-    // Lấy danh sách category từ Servlet
     @SuppressWarnings("unchecked")
     List<String> existingCategories = (List<String>) request.getAttribute("categories");
 
     String body1 = createBody1Content(productList, request.getContextPath());
     request.setAttribute("pageContentBody1", body1);
 
-    // Truyền category list vào hàm tạo Body 2
     String body2 = createBody2Content(request.getContextPath(), message, error, existingCategories);
     request.setAttribute("pageContentBody2", body2);
 %>

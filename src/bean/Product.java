@@ -2,10 +2,6 @@ package bean;
 
 import java.io.Serializable;
 
-/**
- * Bean đại diện cho bảng 'product' (Master Data)
- * Cột: product_id, product_name, category
- */
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
