@@ -14,24 +14,21 @@ import dao.UserDAO;
 
 @WebServlet("/user/Search")
 public class SearchServlet extends HttpServlet {
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        // ★文字化け対策
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
-
         String keyword = request.getParameter("keyword");
         try {
             UserDAO dao = new UserDAO();
             List<CookMenu> list = dao.searchCookMenu(keyword);
 
             request.setAttribute("menuList", list);
-            // 検索経由なので fromStore はセットしない（または false になる）
+            // ★タイトルを必ずセット（JSPでのエラー防止）
+            request.setAttribute("pageTitle", "「" + (keyword != null ? keyword : "") + "」の検索結果");
 
             request.getRequestDispatcher("/user/main/Us_Recipes.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("main/Us_Top.jsp");
         }
     }
 }
