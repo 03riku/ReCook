@@ -16,6 +16,11 @@
 
 	<%-- ★この画面専用のスタイル --%>
 	<style>
+		/* ★ページの余白（白い部分）をこの背景色にする */
+        body {
+            background: rgb(238, 237, 234) !important;
+        }
+
 		/* ヘッダー色 */
 		.page-header {
 			background-color: #ead1dc !important;
