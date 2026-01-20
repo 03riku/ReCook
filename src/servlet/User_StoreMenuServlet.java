@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import bean.CookMenu;
+import bean.User_Store;
 import dao.UserDAO;
 
 @WebServlet("/user/StoreMenu")
@@ -17,7 +18,6 @@ public class User_StoreMenuServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ★文字化け対策
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
@@ -26,11 +26,15 @@ public class User_StoreMenuServlet extends HttpServlet {
             if (idStr != null) {
                 int storeId = Integer.parseInt(idStr);
                 UserDAO dao = new UserDAO();
+
+                // ★店舗名を取得してタイトルを作成
+                User_Store store = dao.getStoreById(storeId);
+                String title = (store != null) ? store.getStoreName() + " 限定メニュー" : "店舗限定メニュー";
+
                 List<CookMenu> list = dao.getMenusByStoreId(storeId);
 
                 request.setAttribute("menuList", list);
-                request.setAttribute("pageTitle", "店舗限定メニュー");
-                // ★店舗経由フラグをセット
+                request.setAttribute("pageTitle", title); // 動的なタイトルをセット
                 request.setAttribute("fromStore", true);
 
                 request.getRequestDispatcher("/user/main/Us_Recipes.jsp").forward(request, response);

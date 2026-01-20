@@ -14,34 +14,26 @@ import dao.UserDAO;
 
 @WebServlet("/user/StoreList")
 public class User_StoreServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // 文字化け対策
             request.setCharacterEncoding("UTF-8");
 
-            // 検索キーワードを取得
             String keyword = request.getParameter("keyword");
+            String pref = request.getParameter("pref"); // 県のパラメータ取得
 
             UserDAO dao = new UserDAO();
-            List<User_Store> list;
 
-            if (keyword != null && !keyword.isEmpty()) {
-                // キーワードがあれば検索を実行
-                list = dao.searchStores(keyword);
-                request.setAttribute("pageTitle", "店舗検索結果");
-            } else {
-                // キーワードがなければ全件取得
-                list = dao.getAllStores();
-                request.setAttribute("pageTitle", "店舗一覧");
-            }
+            // 検索実行（キーワードと県の両方を渡す）
+            List<User_Store> list = dao.searchStores(keyword, pref);
+            // プルダウン用の県リスト取得
+            List<String> prefList = dao.getPrefectures();
 
-            // リストをJSPへ渡す
             request.setAttribute("storeList", list);
-            request.getRequestDispatcher("/user/main/Us_Store.jsp").forward(request, response);
+            request.setAttribute("prefList", prefList); // JSPへ渡す
+            request.setAttribute("pageTitle", "店舗一覧");
 
+            request.getRequestDispatcher("/user/main/Us_Store.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/user/main/Us_Top.jsp");
