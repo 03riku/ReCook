@@ -1,17 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>商品ページ</title>
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 body {
-    background-color: #F5F5F0; /* ロゴに合う淡いグレーベージュ */
+    background-color: #F5F5F0;
 }
 
 /* 左メニュー */
@@ -55,86 +54,89 @@ body {
 
 <body>
 
-    <!-- 左サイドメニュー -->
-    <div class="sidebar">
-        <div class="logo">
-            <img src="<%= request.getContextPath() %>/pic/recook_logo.png"
-                alt="Re.Cook Logo" style="width: 200px;">
-        </div>
-
-        <button class="btn btn-outline-dark menu-btn">商品</button>
-        <button class="btn btn-outline-dark menu-btn">値引き商品</button>
-        <button class="btn btn-outline-dark menu-btn">クーポン</button>
-        <button class="btn btn-outline-dark menu-btn">ログアウト</button>
+<!-- 左サイドメニュー -->
+<div class="sidebar">
+    <div class="logo">
+        <img src="<%= request.getContextPath() %>/pic/recook_logo.png"
+             alt="Re.Cook Logo" style="width: 200px;">
     </div>
 
-    <!-- メイン画面 -->
-    <div class="container">
-        <div class="main-card">
+    <button class="btn btn-outline-dark menu-btn">商品</button>
+    <button class="btn btn-outline-dark menu-btn">値引き商品</button>
+    <button class="btn btn-outline-dark menu-btn">クーポン</button>
+    <button class="btn btn-outline-dark menu-btn">ログアウト</button>
+</div>
 
-            <!-- タイトル＋区切り線 -->
-            <h4 class="text-center mb-2">商品ページ</h4>
-            <hr class="mb-4">
+<!-- メイン画面 -->
+<div class="container">
+    <div class="main-card">
 
-            <div class="row">
+        <!-- タイトル＋区切り線 -->
+        <h4 class="text-center mb-2">商品ページ</h4>
+        <hr class="mb-4">
 
-                <!-- 左：商品一覧 -->
-                <div class="col-6 border-end">
-                    <h5>商品</h5>
-                    <ul>
-                        <li>にんじん</li>
-                        <li>じゃがいも</li>
-                        <li>にら</li>
-                        <li>鮭</li>
-                    </ul>
-                </div>
+        <div class="row">
 
-                <!-- 右：自店舗商品一覧 -->
-                <div class="col-6 ps-4">
-                    <h5>自店舗商品一覧</h5>
+            <!-- 左：商品一覧（チェックして追加） -->
+            <div class="col-md-6">
+                <form action="<%= request.getContextPath() %>/super/addStoreProduct" method="post">
 
-                    <table class="table">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">商品一覧</h5>
+                        <button type="submit" class="btn btn-sm btn-primary">追加</button>
+                    </div>
+
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>選択</th>
                                 <th>商品名</th>
-                                <th>価格</th>
+                                <th>カテゴリ</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>じゃがいも</td>
-                                <td>100円</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>ブロッコリー</td>
-                                <td>120円</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>なす</td>
-                                <td>80円</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>大根</td>
-                                <td>150円</td>
-                            </tr>
+                            <c:forEach var="p" items="${productList}">
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="productIds" value="${p.productId}">
+                                    </td>
+                                    <td>${p.productName}</td>
+                                    <td>${p.category}</td>
+                                </tr>
+                            </c:forEach>
                         </tbody>
                     </table>
+                </form>
+            </div>
 
-                    <!-- 削除ボタン -->
-                    <div class="mt-3 text-center">
-                        <button class="btn btn-danger px-4">削除</button>
-                    </div>
+            <!-- 右：自店舗商品一覧 -->
+            <div class="col-md-6">
+                <h5>自店舗商品一覧</h5>
 
-                </div><!-- col-6 end -->
-            </div><!-- row end -->
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>商品名</th>
+                            <th>カテゴリ</th>
+                            <th>価格</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="sp" items="${storeProductList}">
+                            <tr>
+                                <td>${sp.productName}</td>
+                                <td>${sp.category}</td>
+                                <td>${sp.price}円</td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
 
-        </div><!-- main-card end -->
-    </div><!-- container end -->
+            </div> <!-- col-md-6 -->
+        </div> <!-- row -->
+
+    </div> <!-- main-card -->
+</div> <!-- container -->
 
 </body>
 </html>
