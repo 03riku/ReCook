@@ -33,6 +33,45 @@
         .store-box:hover { opacity: 0.8; color: #333; }
         .bg-blue { background-color: #9fc5e8 !important; }
         .bg-white { background-color: #ffffff !important; }
+
+          /* =========================
+     下部固定ナビ：ホバーで下に色バー（色分け対応）
+     ========================= */
+  .bottom-nav a{
+    position: relative;
+    padding-bottom: 10px;
+  }
+
+  .bottom-nav a::after{
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 70%;
+    height: 5px;
+    background-color: var(--bar-color, #c9daf8);
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+
+  .bottom-nav a:hover::after{
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  .bottom-nav a.active::after{
+    transform: translateX(-50%) scaleX(1) !important;
+  }
+
+  .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
+  .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
+  .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
+  .bottom-nav a.bar-store   { --bar-color:#fff2cc; }
+  .bottom-nav a.bar-account { --bar-color:#ead1dc; }
+
+  /* 下部ナビと被らないように余白確保 */
+  .page-safe-bottom{ padding-bottom: 90px; }
     </style>
 
     <div class="container py-3" style="max-width: 500px;">
@@ -70,6 +109,28 @@
             </c:forEach>
         </div>
     </div>
+    <%-- 下部固定ナビゲーション --%>
+<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
+  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
+     class="text-dark text-decoration-none text-center bar-home"
+     style="min-width:60px;">ホーム</a>
+
+  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
+     class="text-dark text-decoration-none text-center bar-search"
+     style="min-width:60px;">検索</a>
+
+  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
+     class="text-dark text-decoration-none text-center bar-recipe"
+     style="min-width:60px;">料理提案</a>
+
+  <a href="${pageContext.request.contextPath}/user/StoreList"
+     class="text-dark text-decoration-none text-center bar-store active"
+     style="min-width:60px;">店舗</a>
+
+  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
+     class="text-dark text-decoration-none text-center bar-account"
+     style="min-width:60px;">アカウント</a>
+</nav>
 </c:set>
 
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
