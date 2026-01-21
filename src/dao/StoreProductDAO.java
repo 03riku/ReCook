@@ -43,4 +43,38 @@ public class StoreProductDAO extends DAO {
             ps.executeUpdate();
         }
     }
+
+    public void updatePrice(int storeProductId, int price) throws Exception {
+        String sql = "UPDATE store_product SET price = ? WHERE store_product_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, price);
+            ps.setInt(2, storeProductId);
+            ps.executeUpdate();
+        }
+    }
+
+    // 商品を削除する
+    public void delete(int storeProductId) throws Exception {
+        String sql = "DELETE FROM store_product WHERE store_product_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, storeProductId);
+            ps.executeUpdate();
+        }
+    }
+    public boolean isExists(int productId, int storeId) throws Exception {
+        String sql = "SELECT COUNT(*) FROM store_product WHERE product_id = ? AND store_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            ps.setInt(2, storeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
 }
