@@ -7,34 +7,37 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import bean.GeneralUser;
 import dao.UserDAO;
 
-/**
- * お気に入りの状態（1:未登録, 2:登録済）を反転させるサーブレット
- */
 @WebServlet("/user/User_FavoriteToggle")
 public class User_FavoriteToggleServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // リクエストパラメータからメニューIDを取得
+        // セッションからログインユーザー情報を取得
+        HttpSession session = request.getSession();
+        GeneralUser user = (GeneralUser) session.getAttribute("loginUser");
+
+        if (user == null) {
+            // ログインしていない場合はログイン画面へ（安全策）
+            response.sendRedirect(request.getContextPath() + "/user/main/Us_Login.jsp");
+            return;
+        }
+
         String idStr = request.getParameter("id");
-
         try {
-            if (idStr != null && !idStr.isEmpty()) {
-                int id = Integer.parseInt(idStr);
-
+            if (idStr != null) {
+                int menuItemId = Integer.parseInt(idStr);
                 UserDAO dao = new UserDAO();
-                // DAOで状態を反転させる
-                dao.toggleFavorite(id);
 
-                // 完了後、元の詳細画面へリダイレクトして情報を再読み込みさせる
-                response.sendRedirect("MenuDetail?id=" + id);
-            } else {
-                response.sendRedirect("main/Us_Top.jsp");
+                // ログインユーザーのIDを使ってお気に入りを切り替える
+                dao.toggleFavorite(user.getUserId(), menuItemId);
+
+                // 詳細画面へ戻る（表示を更新するため）
+                response.sendRedirect("MenuDetail?id=" + menuItemId);
             }
         } catch (Exception e) {
             e.printStackTrace();
