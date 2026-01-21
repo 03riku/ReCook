@@ -48,9 +48,6 @@ public class UserDAO {
 
     // --- 料理メニュー関連 ---
 
-    /**
-     * 指定したIDの料理を取得。さらに「そのユーザーがお気に入り登録しているか」を判定してfavoriteIdにセットする
-     */
     public CookMenu getCookMenuById(int menuItemId, int userId) throws Exception {
         String sql = "SELECT * FROM COOK_MENU WHERE MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -59,14 +56,11 @@ public class UserDAO {
             if (rs.next()) {
                 CookMenu menu = new CookMenu();
                 fillCookMenu(menu, rs);
-
-                // --- お気に入り判定の追加 ---
                 String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
                 try (PreparedStatement psFav = con.prepareStatement(checkSql)) {
                     psFav.setInt(1, userId);
                     psFav.setInt(2, menuItemId);
                     ResultSet rsFav = psFav.executeQuery();
-                    // 存在すれば 2 (登録済)、なければ 1 (未登録)
                     menu.setFavoriteId(rsFav.next() ? 2 : 1);
                 }
                 return menu;
@@ -75,7 +69,22 @@ public class UserDAO {
         return null;
     }
 
-    // 他の検索メソッド等は既存のままでOK（必要に応じて同様にuserIdを渡す作りに拡張可能）
+    // ★材料一覧の取得（PRODUCTテーブルと中間テーブルを使用）
+    public List<String> getIngredientsByMenuId(int menuItemId) throws Exception {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT p.PRODUCT_NAME FROM PRODUCT p " +
+                     "JOIN PRODUCT_COOK_MENU pcm ON p.PRODUCT_ID = pcm.PRODUCT_ID " +
+                     "WHERE pcm.MENU_ITEM_ID = ?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, menuItemId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getString("PRODUCT_NAME"));
+            }
+        }
+        return list;
+    }
+
     public List<CookMenu> searchCookMenu(String keyword) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         String sql = "SELECT DISTINCT c.* FROM COOK_MENU c " +
@@ -124,54 +133,38 @@ public class UserDAO {
         return list;
     }
 
-    // --- お気に入り関連 (重要：中間テーブル操作) ---
+    // --- お気に入り関連 ---
 
-    /**
-     * お気に入りの登録/解除を切り替える
-     */
     public void toggleFavorite(int userId, int menuItemId) throws Exception {
-        // 現在の登録状況を確認
         String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(checkSql)) {
             ps.setInt(1, userId);
             ps.setInt(2, menuItemId);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
-                // すでに登録されているので削除（解除）
                 String delSql = "DELETE FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
                 try (PreparedStatement psDel = con.prepareStatement(delSql)) {
-                    psDel.setInt(1, userId);
-                    psDel.setInt(2, menuItemId);
-                    psDel.executeUpdate();
+                    psDel.setInt(1, userId); psDel.setInt(2, menuItemId); psDel.executeUpdate();
                 }
             } else {
-                // 登録されていないので挿入（登録）
                 String insSql = "INSERT INTO FAVORITE_MENU (USER_ID, MENU_ITEM_ID) VALUES (?, ?)";
                 try (PreparedStatement psIns = con.prepareStatement(insSql)) {
-                    psIns.setInt(1, userId);
-                    psIns.setInt(2, menuItemId);
-                    psIns.executeUpdate();
+                    psIns.setInt(1, userId); psIns.setInt(2, menuItemId); psIns.executeUpdate();
                 }
             }
         }
     }
 
-    /**
-     * そのユーザーのお気に入り一覧を取得
-     */
     public List<CookMenu> getFavoriteMenus(int userId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
-        String sql = "SELECT c.* FROM COOK_MENU c " +
-                     "JOIN FAVORITE_MENU f ON c.MENU_ITEM_ID = f.MENU_ITEM_ID " +
-                     "WHERE f.USER_ID = ?";
+        String sql = "SELECT c.* FROM COOK_MENU c JOIN FAVORITE_MENU f ON c.MENU_ITEM_ID = f.MENU_ITEM_ID WHERE f.USER_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CookMenu menu = new CookMenu();
                 fillCookMenu(menu, rs);
-                menu.setFavoriteId(2); // 表示上「登録済」の状態にする
+                menu.setFavoriteId(2);
                 list.add(menu);
             }
         }
@@ -179,6 +172,24 @@ public class UserDAO {
     }
 
     // --- 店舗関連 ---
+
+    public List<User_Store> getStoresByMenuItemId(int menuItemId) throws Exception {
+        List<User_Store> list = new ArrayList<>();
+        String sql = "SELECT s.* FROM STORE s JOIN STORE_MENU sm ON s.STORE_ID = sm.STORE_ID WHERE sm.MENU_ITEM_ID = ?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, menuItemId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User_Store s = new User_Store();
+                s.setStoreId(rs.getInt("STORE_ID"));
+                s.setStoreName(rs.getString("STORE_NAME"));
+                s.setStoreAddress(rs.getString("STORE_ADDRESS"));
+                list.add(s);
+            }
+        }
+        return list;
+    }
+
     public User_Store getStoreById(int id) throws Exception {
         String sql = "SELECT * FROM STORE WHERE STORE_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {

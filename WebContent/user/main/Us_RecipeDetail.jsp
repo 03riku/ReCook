@@ -1,183 +1,74 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<%-- サーブレットから渡された cookMenu オブジェクトを変数 menu に代入 --%>
 <c:set var="menu" value="${cookMenu}" />
+<c:set var="pageTitle" value="レシピ詳細" scope="request" />
 
-<%-- タイトル設定（DBの料理名を使用） --%>
-<c:set var="pageTitle" value="${menu.dishName}" scope="request" />
-
-<%-- 画面の中身を設定 --%>
 <c:set var="pageBody" scope="request">
-
     <style>
-    /* ★ページの余白（白い部分）をこの背景色にする */
-    	body {
-      		background: rgb(238, 237, 234) !important;
-    	}
-
-        /* =========================
-           ★下部固定ナビ：ホバーで下に色バー（色分け対応）
-           ========================= */
-        .bottom-nav a{
-            position: relative;
-            padding-bottom: 10px; /* バー分 */
-        }
-
-        /* バー本体（色は --bar-color で決まる） */
-        .bottom-nav a::after{
-            content: "";
-            position: absolute;
-            left: 50%;
-            bottom: 2px;
-            width: 70%;
-            height: 5px;
-            background-color: var(--bar-color, #c9daf8); /* デフォルト */
-            transform: translateX(-50%) scaleX(0);
-            transform-origin: center;
-            border-radius: 2px;
-            transition: transform 0.15s ease;
-        }
-
-        /* ホバーで表示 */
-        .bottom-nav a:hover::after{
-            transform: translateX(-50%) scaleX(1);
-        }
-
-        /* 今いるページは常に表示（使うならactive付ける） */
-        .bottom-nav a.active::after{
-            transform: translateX(-50%) scaleX(1) !important;
-        }
-
-        /* ====== 色分け（好きに変更OK） ====== */
-        .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：薄いピンク */
-        .bottom-nav a.bar-search  { --bar-color:#c9daf8; } /* 検索：青 */
-        .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; } /* 料理提案：緑 */
-        .bottom-nav a.bar-store   { --bar-color:#fff2cc; } /* 店舗：黄 */
-        .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：ピンク */
-    	}
-
-        /* ヘッダー色をピンクに設定 */
+        body { background: rgb(238, 237, 234) !important; }
         .page-header { background-color: #ead1dc !important; }
 
-        /* お気に入りボタンのスタイル */
-        .fav-btn {
-            border: 1px solid #333; background-color: #fff; padding: 5px 10px;
-            font-size: 0.9rem; text-decoration: none; color: #333;
-            display: inline-block; white-space: nowrap; transition: background-color 0.2s; cursor: pointer;
-        }
-        .fav-btn:hover { background-color: #f0f0f0; color: #333; }
+        .header-bar { display: flex; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1020; }
+        .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 区切り線（破線） */
+        .fav-btn { border: 1px solid #333; background: #fff; padding: 5px 10px; font-size: 0.9rem; text-decoration: none; color: #333; }
         .dashed-line { border-top: 2px dashed #999; margin: 20px 0; }
-
-        /* 商品説明の見出しスタイル */
-        .desc-header {
-            border-top: 1px solid #333; border-bottom: 1px solid #333;
-            padding: 5px; text-align: center; font-weight: bold; margin-bottom: 15px;
-        }
-
-        /* クーポンボタンのスタイル */
-        .coupon-btn {
-            background-color: #ffff00; border: 2px solid #333; color: #333;
-            font-weight: bold; padding: 15px; width: 100%; font-size: 1.1rem; transition: opacity 0.2s;
-        }
-        .coupon-btn:hover { opacity: 0.8; }
+        .ingredient-box { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 15px; }
+        .coupon-btn { background: #ffff00; border: 2px solid #333; color: #333; font-weight: bold; padding: 15px; width: 100%; display: block; text-align: center; text-decoration: none; }
+        .store-search-btn { background: #fff; border: 2px solid #333; color: #333; font-weight: bold; padding: 12px; width: 100%; display: block; text-align: center; text-decoration: none; }
     </style>
 
+    <%-- ★ヘッダーバー --%>
+    <div class="header-bar">
+        <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
+        <h5 class="mb-0 fw-bold">${menu.dishName}</h5>
+    </div>
+
     <div class="container py-0 px-0" style="max-width: 500px;">
-        <%-- 料理画像エリア（プレースホルダー） --%>
-        <div class="bg-light d-flex align-items-center justify-content-center border-bottom border-dark" style="height: 220px; width: 100%;">
-            <div class="text-center text-muted">
-                <i class="fas fa-utensils fa-4x mb-2"></i><br>
-                料理画像
-            </div>
+        <div class="bg-light d-flex align-items-center justify-content-center border-bottom border-dark" style="height: 220px;">
+            <div class="text-center text-muted"><i class="fas fa-utensils fa-4x mb-2"></i><br>料理画像</div>
         </div>
 
         <div class="container px-4 py-3">
-            <%-- 料理名（DBから取得） --%>
-            <h4 class="fw-bold mb-3">${menu.dishName}</h4>
-
             <div class="row align-items-end mb-3">
                 <div class="col-6">
                     <div class="fw-bold"><i class="far fa-clock"></i> 調理時間</div>
-                    <%-- ★ DBの COOK_TIME を表示 --%>
                     <div class="ps-3 fs-5">${menu.cookTime}分</div>
                 </div>
                 <div class="col-6 text-end">
-                    <%-- ★ お気に入りボタンの切り替え判定（1:未登録, 2:登録済） --%>
-                    <c:choose>
-                        <c:when test="${menu.favoriteId == 2}">
-                            <%-- 登録済みの場合（解除ボタン） --%>
-                            <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}"
-                               class="fav-btn shadow-sm" style="background-color: #fff9c4; border-color: #fbc02d;">
-                                <i class="fas fa-star" style="color: #fbc02d;"></i> お気に入り解除
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            <%-- 未登録の場合（登録ボタン） --%>
-                            <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}"
-                               class="fav-btn shadow-sm">
-                                <i class="far fa-star"></i> お気に入り登録
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
+                    <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}" class="fav-btn shadow-sm"
+                       style="${menu.favoriteId == 2 ? 'background:#fff9c4; border-color:#fbc02d;' : ''}">
+                        <i class="${menu.favoriteId == 2 ? 'fas' : 'far'} fa-star" style="${menu.favoriteId == 2 ? 'color:#fbc02d;' : ''}"></i>
+                        ${menu.favoriteId == 2 ? 'お気に入り解除' : 'お気に入り登録'}
+                    </a>
                 </div>
             </div>
 
             <div class="dashed-line"></div>
 
-            <%-- ★ 紹介文セクションは削除されました --%>
-
-            <div class="desc-header mt-5">商品説明</div>
-
-            <%-- 商品説明本文（DBの DESCRIPTION を表示） --%>
-            <div class="text-center mb-4 text-muted">
-                <p>${menu.description}</p>
+            <%-- ★材料セクション --%>
+            <div class="fw-bold mb-2">材料一覧</div>
+            <div class="ingredient-box mb-4">
+                <ul class="mb-0">
+                    <c:forEach var="ig" items="${ingredients}"><li>${ig}</li></c:forEach>
+                    <c:if test="${empty ingredients}"><li>（材料情報がありません）</li></c:if>
+                </ul>
             </div>
 
-            <div class="dashed-line"></div>
+            <div class="fw-bold text-center mb-3">作り方・紹介</div>
+            <div class="text-center mb-4 text-muted"><p>${menu.description}</p></div>
 
             <div class="row justify-content-center mb-5">
                 <div class="col-10">
-                    <%-- ★ 修正：店舗経由（showCouponフラグがtrue）の場合のみ表示 --%>
-                    <c:if test="${showCoupon}">
-                        <a href="${pageContext.request.contextPath}/user/main/Us_Discount.jsp"
-                           class="btn coupon-btn shadow-sm text-center text-decoration-none d-block">
-                            クーポンを表示する
-                        </a>
-                    </c:if>
+                    <c:if test="${showCoupon}"><a href="${pageContext.request.contextPath}/user/main/Us_Discount.jsp" class="coupon-btn shadow-sm mb-3">クーポンを表示する</a></c:if>
+                    <a href="${pageContext.request.contextPath}/user/StoreByMenu?menuId=${menu.menuItemId}&dishName=${menu.dishName}" class="store-search-btn shadow-sm">
+                        <i class="fas fa-map-marker-alt"></i> このクーポンが使えるお店を探す
+                    </a>
                 </div>
             </div>
             <div style="height: 50px;"></div>
         </div>
     </div>
-
-    <%-- 下部固定ナビゲーション --%>
-    <nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
-        <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
-           class="text-dark text-decoration-none text-center bar-home"
-           style="min-width: 60px;">ホーム</a>
-
-        <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
-           class="text-dark text-decoration-none text-center bar-search"
-           style="min-width: 60px;">検索</a>
-
-        <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-           class="text-dark text-decoration-none text-center bar-recipe"
-           style="min-width: 60px;">料理提案</a>
-
-        <%-- 店舗リンクは常にサーブレットを通す --%>
-        <a href="${pageContext.request.contextPath}/user/StoreList"
-           class="text-dark text-decoration-none text-center bar-store"
-           style="min-width: 60px;">店舗</a>
-
-        <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-           class="text-dark text-decoration-none text-center bar-account"
-           style="min-width: 60px;">アカウント</a>
-    </nav>
-
 </c:set>
-
-<%-- base.jspを呼び出し --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
