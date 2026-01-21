@@ -58,7 +58,11 @@ body { background-color: #F5F5F0; }
     <button class="btn btn-outline-dark menu-btn">商品</button>
     <button class="btn btn-outline-dark menu-btn">値引き商品</button>
     <button class="btn btn-outline-dark menu-btn">クーポン</button>
-    <button class="btn btn-outline-dark menu-btn">ログアウト</button>
+    <!-- サイドバー内のログアウト部分 -->
+	<a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp"
+	   class="btn btn-outline-dark menu-btn">
+	   ログアウト
+	</a>
 </div>
 
 <div class="container-fluid">
