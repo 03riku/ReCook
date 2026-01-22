@@ -122,7 +122,7 @@
             }
         }
         sb.append("</select>");
-        sb.append("<div id=\"genreError\" class=\"text-danger small mt-1\" style=\"display: none;\"><i class=\"bi bi-exclamation-circle\"></i> ジャンル選択してください</div>");
+        sb.append("<div id=\"genreError\" class=\"text-danger small mt-1\" style=\"display: none;\"><i class=\"bi bi-exclamation-circle\"></i> ジャンルを選択してください</div>");
         sb.append("</div>");
 
         sb.append("<div class=\"mb-3 position-relative\"><label class=\"form-label fw-bold\">使用商品 (Product)</label>");
