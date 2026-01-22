@@ -1,4 +1,4 @@
-package product;
+package admin;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,12 +10,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import bean.Product;
-import dao.ProductDAO;
+import dao.AdminDAO; // Đã đổi từ ProductDAO sang AdminDAO
 
 @WebServlet("/product/Admin_ProductServlet")
 public class Admin_ProductServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private ProductDAO productDao = new ProductDAO();
+
+    // Khởi tạo AdminDAO thay vì ProductDAO
+    private AdminDAO adminDao = new AdminDAO();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -25,24 +27,23 @@ public class Admin_ProductServlet extends HttpServlet {
 
         try {
             List<Product> products;
+            // Gọi hàm từ adminDao
             if (searchName != null && !searchName.trim().isEmpty()) {
-                products = productDao.searchProducts(searchName.trim());
+                products = adminDao.searchProducts(searchName.trim());
             } else {
-                products = productDao.getAllProducts();
+                products = adminDao.getAllProducts();
             }
-
-            // Lấy danh sách category từ DB để hiển thị trong datalist
-            List<String> categories = productDao.getAllCategories();
+            List<String> categories = adminDao.getAllCategories();
 
             request.setAttribute("products", products);
-            request.setAttribute("categories", categories); // Truyền danh sách category sang JSP
+            request.setAttribute("categories", categories);
             request.setAttribute("lastSearch", searchName);
 
             request.getRequestDispatcher("/admin/product/Ad_Product.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi tải dữ liệu.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "error");
         }
     }
 
@@ -67,10 +68,10 @@ public class Admin_ProductServlet extends HttpServlet {
                     }
                 }
 
-                if (productDao.isProductNameExists(name, productId)) {
-                    request.setAttribute("error", "既に存在しています。"); // Thông báo lỗi: Đã tồn tại
+                // Gọi hàm kiểm tra từ adminDao
+                if (adminDao.isProductNameExists(name, productId)) {
+                    request.setAttribute("error", "既に存在しています。");
 
-                    // Giữ lại dữ liệu đang nhập
                     Product p = new Product(productId, name, category);
                     request.setAttribute("editingProduct", p);
 
@@ -79,21 +80,20 @@ public class Admin_ProductServlet extends HttpServlet {
                 }
 
                 Product p = new Product(productId, name, category);
-                productDao.saveOrUpdate(p);
+                // Gọi hàm lưu từ adminDao
+                adminDao.saveOrUpdate(p);
 
-                // Đặt thông báo thành công
-                request.setAttribute("message", "更新しました。"); // Thông báo thành công: Đã cập nhật
+                request.setAttribute("message", "更新しました。");
 
             } else if ("bulkDelete".equals(action)) {
                 String[] deleteIds = request.getParameterValues("deleteIds");
                 if (deleteIds != null && deleteIds.length > 0) {
-                    productDao.bulkDelete(deleteIds);
-                    request.setAttribute("message", "削除しました。"); // Thông báo xóa thành công
+                    // Gọi hàm xóa từ adminDao
+                    adminDao.bulkDelete(deleteIds);
+                    request.setAttribute("message", "削除しました。");
                 }
             }
 
-            // Thay vì redirect, ta gọi lại doGet để tải lại dữ liệu MỚI NHẤT và hiển thị cùng thông báo
-            // Lưu ý: Forward sẽ giữ lại attribute 'message' trong request
             doGet(request, response);
 
         } catch (Exception e) {

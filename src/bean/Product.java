@@ -9,18 +9,15 @@ public class Product implements Serializable {
     private String productName;
     private String category;
 
-    // Default Constructor
     public Product() {
     }
 
-    // Constructor đầy đủ (Sửa lỗi: コンストラクター Product(int, String, String) は未定義です)
     public Product(int productId, String productName, String category) {
         this.productId = productId;
         this.productName = productName;
         this.category = category;
     }
 
-    // Getters and Setters
     public int getProductId() {
         return productId;
     }

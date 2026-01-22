@@ -69,7 +69,7 @@
 		</li>
 
 		<li class="mb-2">
-			<a href="${pageContext.request.contextPath}/admin/recipe/Ad_recipe.jsp" class="menu-link-item">
+			<a href="${pageContext.request.contextPath}/admin/recipe/RecipeServlet" class="menu-link-item">
 				料理
 			</a>
 		</li>

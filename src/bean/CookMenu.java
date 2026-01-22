@@ -1,18 +1,25 @@
 package bean;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CookMenu implements Serializable {
     private int menuItemId;
     private String dishName;
     private String description;
     private int cookTime;
-    private int genreId; // ★追加
-    private int couponId;
-    private int favoriteId;
-    private int storeId;
+    private int genreId;
 
-    // --- ゲッターとセッター ---
+    // --- Các thuộc tính bổ sung cho hiển thị ---
+    private String genreName;       // Tên thể loại (Join từ bảng Genre)
+    private String image;           // Tên file ảnh (Lưu trong cột image hoặc tương tự)
+    private List<Product> productList = new ArrayList<>(); // Danh sách nguyên liệu
+
+    public CookMenu() {}
+
+    // --- GETTERS & SETTERS ---
+
     public int getMenuItemId() { return menuItemId; }
     public void setMenuItemId(int menuItemId) { this.menuItemId = menuItemId; }
 
@@ -25,15 +32,17 @@ public class CookMenu implements Serializable {
     public int getCookTime() { return cookTime; }
     public void setCookTime(int cookTime) { this.cookTime = cookTime; }
 
-    public int getGenreId() { return genreId; } // ★追加
-    public void setGenreId(int genreId) { this.genreId = genreId; } // ★追加
+    public int getGenreId() { return genreId; }
+    public void setGenreId(int genreId) { this.genreId = genreId; }
 
-    public int getCouponId() { return couponId; }
-    public void setCouponId(int couponId) { this.couponId = couponId; }
+    public String getGenreName() { return genreName; }
+    public void setGenreName(String genreName) { this.genreName = genreName; }
 
-    public int getFavoriteId() { return favoriteId; }
-    public void setFavoriteId(int favoriteId) { this.favoriteId = favoriteId; }
+    // --- QUAN TRỌNG: Thêm Getter/Setter cho Image để sửa lỗi ---
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
+    // -----------------------------------------------------------
 
-    public int getStoreId() { return storeId; }
-    public void setStoreId(int storeId) { this.storeId = storeId; }
+    public List<Product> getProductList() { return productList; }
+    public void setProductList(List<Product> productList) { this.productList = productList; }
 }

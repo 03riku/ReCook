@@ -64,8 +64,10 @@
                 sb.append("<div class=\"row g-3 align-items-center mb-4\">");
                 sb.append("<div class=\"col-4\"><label class=\"fw-bold\">").append(f[0]).append("</label></div>");
                 sb.append("<div class=\"col-8\"><input type=\"text\" id=\"").append(f[1]).append("\" name=\"").append(f[1]).append("\" value=\"").append(f[2]).append("\" class=\"form-control form-control-line\" required>");
+
+                // Div hiển thị lỗi cho ID
                 if(f[1].equals("storeId")) {
-                    sb.append("<div id=\"idError\" class=\"text-danger small mt-1\" style=\"display:none;\">店舗IDは10桁の数字で入力してください。</div>");
+                    sb.append("<div id=\"idError\" class=\"text-danger small mt-1\" style=\"display:none;\"></div>");
                 }
                 sb.append("</div></div>");
             }
@@ -95,19 +97,31 @@ function validateForm() {
     const storeIdInput = document.getElementById('storeId');
     const idError = document.getElementById('idError');
     const val = storeIdInput.value;
-    if (!/^\d{10}$/.test(val)) { // Regex kiểm tra đúng 10 chữ số
+
+    idError.style.display = 'none';
+    storeIdInput.classList.remove('is-invalid');
+
+    if (!/^\d{10}$/.test(val)) {
+        idError.innerText = "店舗IDは10桁の数字で入力してください。";
         idError.style.display = 'block';
         storeIdInput.focus();
         return false;
     }
-    idError.style.display = 'none';
+
+    if (val.charAt(0) === '0') {
+        idError.innerText = "最初の桁は０以外入力してください。";
+        idError.style.display = 'block';
+        storeIdInput.focus();
+        return false;
+    }
+
     return true;
 }
 </script>
 
 <%
     request.setAttribute("pageTitle", "店舗管理");
-    request.setAttribute("currentMenu", "store"); // Quan trọng để sidebar sáng lên
+    request.setAttribute("currentMenu", "store");
 
     List<String[]> storeList = (List<String[]>) request.getAttribute("stores");
     Store sel = (Store) request.getAttribute("selectedStore");

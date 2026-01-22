@@ -15,12 +15,12 @@
             padding: 0;
             overflow-x: hidden;
             font-family: sans-serif;
-            background-color: #f8f9fa; /* Thêm màu nền nhẹ */
+            background-color: #f8f9fa;
         }
 
         .sidebar {
-            width: 200px; /* Độ rộng Sidebar */
-            height: 100vh; /* Chiếm toàn bộ chiều cao */
+            width: 200px;
+            height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
