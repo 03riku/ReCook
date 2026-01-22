@@ -12,7 +12,7 @@
         body { background: rgb(238, 237, 234) !important; }
         .page-header { background-color: #ead1dc !important; }
 
-        /* 固定ヘッダー（戻るボタン付き） */
+        /* 固定ヘッダー */
         .header-bar {
             display: flex; align-items: center; padding: 10px;
             background: #fff; border-bottom: 1px solid #ddd;
@@ -20,7 +20,7 @@
         }
         .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 料理画像エリア：DBのファイル名を表示 */
+        /* 料理画像エリア */
         .recipe-img-box { height: 220px; background: #ddd; overflow: hidden; border-bottom: 1px solid #000; text-align: center; }
         .recipe-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -45,14 +45,14 @@
         }
     </style>
 
-    <%-- 画面上部：戻るボタンと料理名 --%>
+    <%-- 画面上部 --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <h5 class="mb-0 fw-bold">${menu.dishName}</h5>
     </div>
 
     <div class="container py-0 px-0" style="max-width: 500px;">
-        <%-- ★ 料理画像：データベースの IMAGE 列に登録された名前（png/jpg）を表示 --%>
+        <%-- 料理画像 --%>
         <div class="recipe-img-box">
             <c:choose>
                 <c:when test="${not empty menu.image}">
@@ -83,7 +83,7 @@
 
             <div class="dashed-line"></div>
 
-            <%-- 材料一覧（Productオブジェクトのリストを表示） --%>
+            <%-- 材料一覧（Productのリストをループ表示） --%>
             <div class="fw-bold mb-2">材料一覧</div>
             <div class="ingredient-box">
                 <ul class="mb-0">
@@ -98,15 +98,14 @@
             <p class="text-muted text-center">${menu.description}</p>
 
             <div class="mt-5">
-                <%-- ★クーポン機能：店舗から来た時（fromStore=true）のみ表示 --%>
-                <c:if test="${param.fromStore == 'true'}">
+                <%-- ★クーポンボタン：店舗から来た時（fromStore=true）のみ表示 --%>
+                <c:if test="${fromStore == 'true'}">
                     <a id="couponBtn" class="coupon-btn shadow-sm mb-3" onclick="showBarcode()">
                         クーポンを表示する
                     </a>
 
                     <div id="barcodeArea" class="shadow-sm mb-3">
                         <p class="fw-bold mb-2">会計時にご提示ください</p>
-                        <%-- バーコード画像を表示 --%>
                         <img src="${pageContext.request.contextPath}/pic/baakoodo.png" alt="バーコード" style="max-width: 100%; height: auto;">
                     </div>
                 </c:if>
@@ -120,16 +119,12 @@
         </div>
     </div>
 
-    <%-- クーポン表示切り替え用のJavaScript --%>
     <script>
         function showBarcode() {
-            // バーコードを表示
             document.getElementById('barcodeArea').style.display = 'block';
-            // ボタンを非表示
             document.getElementById('couponBtn').style.display = 'none';
         }
     </script>
 </c:set>
 
-<%-- ベースのデザインを適用 --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
