@@ -51,18 +51,31 @@ body { background-color: #F5F5F0; }
 
 <body>
 
+<!-- 左サイドメニュー -->
 <div class="sidebar">
     <div class="logo">
         <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Re.Cook Logo" style="width: 200px;">
     </div>
-    <button class="btn btn-outline-dark menu-btn">商品</button>
-    <button class="btn btn-outline-dark menu-btn">値引き商品</button>
+
+    <!-- 修正1: 「商品」をサーブレットへのリンクにする -->
+    <a href="<%= request.getContextPath() %>/super/storeProductPage"
+       class="btn ${requestURI.contains('storeProductPage') ? 'btn-dark' : 'btn-outline-dark'} menu-btn">
+       商品
+    </a>
+
+    <!-- 修正2: 「値引き商品」のリンク（既に設定されていればOKですが、念のため確認） -->
+    <a href="<%= request.getContextPath() %>/super/discountPage"
+       class="btn ${requestURI.contains('discountPage') ? 'btn-dark' : 'btn-outline-dark'} menu-btn">
+       値引き商品
+    </a>
+
     <button class="btn btn-outline-dark menu-btn">クーポン</button>
-    <!-- サイドバー内のログアウト部分 -->
-	<a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp"
-	   class="btn btn-outline-dark menu-btn">
-	   ログアウト
-	</a>
+
+    <!-- ログアウト確認画面へのリンク -->
+    <a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp"
+       class="btn btn-outline-dark menu-btn">
+       ログアウト
+    </a>
 </div>
 
 <div class="container-fluid">
@@ -116,50 +129,57 @@ body { background-color: #F5F5F0; }
             </div>
 
             <!-- 右：自店舗商品一覧 -->
-            <div class="col-md-7 d-flex flex-column">
-                <div class="table-header-area">
-                    <h5 class="mb-0">自店舗商品一覧</h5>
-                    <!-- 右側にはボタンがないが、高さを揃えるためのダミー領域 -->
-                    <div></div>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="table table-bordered table-hover mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>商品名</th>
-                                <th>カテゴリ</th>
-                                <th style="width: 100px;">価格(円)</th>
-                                <th style="width: 130px;">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="sp" items="${storeProductList}">
-                                <tr>
-                                    <form action="<%= request.getContextPath() %>/super/storeAction" method="post" style="display: contents;">
-                                        <input type="hidden" name="storeProductId" value="${sp.storeProductId}">
-                                        <td>${sp.productName}</td>
-                                        <td>${sp.category}</td>
-                                        <td>
-                                            <input type="number" name="price" value="${sp.price}"
-                                                   class="form-control form-control-sm text-end" min="0">
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <button type="submit" name="action" value="update" class="btn btn-sm btn-success">更新</button>
-                                                <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('削除しますか？')">削除</button>
-                                            </div>
-                                        </td>
-                                    </form>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div> <!-- row -->
-    </div> <!-- main-card -->
-</div> <!-- container -->
+			<div class="col-md-7 d-flex flex-column">
+			    <!-- 一括更新用のフォームを開始 -->
+			    <form action="<%= request.getContextPath() %>/super/storeBulkUpdate" method="post" class="d-flex flex-column h-100">
+			        <div class="table-header-area">
+			            <h5 class="mb-0">自店舗商品一覧</h5>
+			            <!-- 左と同じような青いボタン（一括更新）を追加 -->
+			            <button type="submit" class="btn btn-sm btn-success px-3">一括更新</button>
+			        </div>
+
+			        <div class="table-scroll-container">
+			            <table class="table table-bordered table-hover mb-0 align-middle">
+			                <thead>
+			                    <tr>
+			                        <th>商品名</th>
+			                        <th>カテゴリ</th>
+			                        <th style="width: 100px;">価格(円)</th>
+			                        <th style="width: 130px;">操作</th>
+			                    </tr>
+			                </thead>
+			                <tbody>
+			                    <c:forEach var="sp" items="${storeProductList}">
+			                        <tr>
+			                            <!-- 全てのIDと価格を配列として送信できるように name を設定 -->
+			                            <input type="hidden" name="storeProductIds" value="${sp.storeProductId}">
+			                            <td>${sp.productName}</td>
+			                            <td>${sp.category}</td>
+			                            <td>
+			                                <input type="number" name="prices" value="${sp.price}"
+			                                       class="form-control form-control-sm text-end" min="0">
+			                            </td>
+			                            <td class="text-center">
+			                                <!-- 個別の削除ボタン。formactionを使って別のサーブレットに飛ばす -->
+			                                <div class="btn-group">
+			                                    <!-- 個別更新（その行だけ）もできるようにしておく場合は以下 -->
+			                                    <button type="submit" formaction="<%= request.getContextPath() %>/super/storeAction"
+			                                            name="action" value="update" class="btn btn-sm btn-outline-success">更新</button>
+
+			                                    <button type="submit" formaction="<%= request.getContextPath() %>/super/storeAction"
+			                                            name="action" value="delete" class="btn btn-sm btn-danger"
+			                                            onclick="return confirm('削除しますか？')">削除</button>
+			                                </div>
+			                                <!-- 個別操作の時に「どのIDか」を判別させるための隠しパラメータ（個別ボタン用） -->
+			                                <input type="hidden" name="storeProductId" value="${sp.storeProductId}" disabled class="row-id">
+			                            </td>
+			                        </tr>
+			                    </c:forEach>
+			                </tbody>
+			            </table>
+			        </div>
+			    </form>
+			</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
