@@ -1,4 +1,3 @@
-
 package servlet;
 
 import java.io.IOException;
@@ -13,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import bean.CookMenu;
 import bean.GeneralUser;
+import bean.Product; // ★追加
 import dao.UserDAO;
 
 @WebServlet("/user/MenuDetail")
@@ -33,11 +33,13 @@ public class MenuDetailServlet extends HttpServlet {
                 UserDAO dao = new UserDAO();
 
                 CookMenu menu = dao.getCookMenuById(id, userId);
-                List<String> ingredients = dao.getIngredientsByMenuId(id);
+                // ★ ここを List<Product> に修正
+                List<Product> ingredients = dao.getIngredientsByMenuId(id);
 
                 request.setAttribute("cookMenu", menu);
                 request.setAttribute("ingredientsList", ingredients);
-                request.setAttribute("showCoupon", "true".equals(fromStore));
+                // 検索から来ても店舗から来ても fromStore パラメータでボタンを制御
+                request.setAttribute("fromStore", fromStore);
 
                 request.getRequestDispatcher("/user/main/Us_RecipeDetail.jsp").forward(request, response);
             }

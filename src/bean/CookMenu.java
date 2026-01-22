@@ -11,15 +11,17 @@ public class CookMenu implements Serializable {
     private int cookTime;
     private int genreId;
 
-    // --- Các thuộc tính bổ sung cho hiển thị ---
-    private String genreName;       // Tên thể loại (Join từ bảng Genre)
-    private String image;           // Tên file ảnh (Lưu trong cột image hoặc tương tự)
-    private List<Product> productList = new ArrayList<>(); // Danh sách nguyên liệu
+    // --- 表示用の追加属性 ---
+    private String genreName;
+    private String image;           // データベースの image 列の値
+    private int favoriteId;         // 1:未登録, 2:登録済み
+
+    // ★ List<String> から List<Product> に変更しました
+    private List<Product> productList = new ArrayList<>();
 
     public CookMenu() {}
 
-    // --- GETTERS & SETTERS ---
-
+    // --- ゲッターとセッター ---
     public int getMenuItemId() { return menuItemId; }
     public void setMenuItemId(int menuItemId) { this.menuItemId = menuItemId; }
 
@@ -38,11 +40,19 @@ public class CookMenu implements Serializable {
     public String getGenreName() { return genreName; }
     public void setGenreName(String genreName) { this.genreName = genreName; }
 
-    // --- QUAN TRỌNG: Thêm Getter/Setter cho Image để sửa lỗi ---
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
-    // -----------------------------------------------------------
 
-    public List<Product> getProductList() { return productList; }
-    public void setProductList(List<Product> productList) { this.productList = productList; }
+    public int getFavoriteId() { return favoriteId; }
+    public void setFavoriteId(int favoriteId) { this.favoriteId = favoriteId; }
+
+    // ★ ゲッターの戻り値を List<Product> に変更
+    public List<Product> getProductList() {
+        return productList;
+    }
+
+    // ★ セッターの引数を List<Product> に変更
+    public void setProductList(List<Product> productList) {
+        this.productList = productList;
+    }
 }

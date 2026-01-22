@@ -40,21 +40,26 @@
         }
     </style>
 
+    <%-- ヘッダー --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <h5 class="mb-0 fw-bold">${menu.dishName}</h5>
     </div>
 
     <div class="container py-0 px-0" style="max-width: 500px;">
+        <%-- 料理画像：DBに画像名があればそれを表示、なければIDで判定 --%>
         <div class="recipe-img-box">
             <c:choose>
+                <c:when test="${not empty menu.image}">
+                    <img src="${pageContext.request.contextPath}/pic/${menu.image}" alt="${menu.dishName}">
+                </c:when>
                 <c:when test="${menu.menuItemId == 1}"><img src="${pageContext.request.contextPath}/pic/omuraisu.png" alt="オムライス"></c:when>
                 <c:when test="${menu.menuItemId == 2}"><img src="${pageContext.request.contextPath}/pic/hanbaagu.png" alt="ハンバーグ"></c:when>
                 <c:when test="${menu.menuItemId == 3}"><img src="${pageContext.request.contextPath}/pic/sake teishoku.jpg" alt="鮭の塩焼き定食"></c:when>
                 <c:when test="${menu.menuItemId == 4}"><img src="${pageContext.request.contextPath}/pic/moyashi itame.jpg" alt="もやし炒め"></c:when>
                 <c:otherwise>
                     <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
-                        <i class="fas fa-utensils fa-4x mb-2"></i><br>料理画像
+                        <i class="fas fa-utensils fa-4x mb-2"></i><br>料理画像（準備中）
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -68,7 +73,8 @@
                 </div>
                 <div class="col-6 text-end">
                     <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}" class="fav-btn shadow-sm">
-                        <i class="${menu.favoriteId == 2 ? 'fas text-warning' : 'far'} fa-star"></i>
+                        <%-- favoriteIdが2なら星を塗りつぶす --%>
+                        <i class="${menu.favoriteId == 2 ? 'fas' : 'far'} fa-star" style="${menu.favoriteId == 2 ? 'color: #f1c40f;' : ''}"></i>
                         ${menu.favoriteId == 2 ? '登録済み' : 'お気に入り'}
                     </a>
                 </div>
@@ -79,7 +85,10 @@
             <div class="fw-bold mb-2">材料一覧</div>
             <div class="ingredient-box">
                 <ul class="mb-0">
-                    <c:forEach var="ig" items="${ingredientsList}"><li>${ig}</li></c:forEach>
+                    <%-- ★修正：igはProductオブジェクトなので .productName を指定 --%>
+                    <c:forEach var="ig" items="${ingredientsList}">
+                        <li>${ig.productName}</li>
+                    </c:forEach>
                     <c:if test="${empty ingredientsList}"><li>材料データが未登録です</li></c:if>
                 </ul>
             </div>
@@ -88,8 +97,7 @@
             <p class="text-muted text-center">${menu.description}</p>
 
             <div class="mt-5">
-                <%-- ★クーポンボタンの出し分け条件 --%>
-                <%-- URLに fromStore=true がある時だけ表示される --%>
+                <%-- 店舗から来た（fromStore=true）時だけ表示 --%>
                 <c:if test="${param.fromStore == 'true'}">
                     <a id="couponBtn" class="coupon-btn shadow-sm mb-3" onclick="showBarcode()">
                         クーポンを表示する
@@ -101,7 +109,7 @@
                     </div>
                 </c:if>
 
-                <%-- ★お店を探すボタン（これは検索から来ても常に表示） --%>
+                <%-- お店を探すボタン（常に表示） --%>
                 <a href="${pageContext.request.contextPath}/user/StoreByMenu?menuId=${menu.menuItemId}&dishName=${menu.dishName}" class="store-search-btn shadow-sm">
                     <i class="fas fa-map-marker-alt"></i> このクーポンが使えるお店を探す
                 </a>
