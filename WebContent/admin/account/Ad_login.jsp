@@ -86,7 +86,7 @@
                 errorMsg = "IDもしくはパスワードが正しくありません";
             } else if ("notnumber".equals(errorParam)) {
                 // IDが数字でない場合
-                errorMsg = "ID 数字で入力してください";
+                errorMsg = "IDは数字で入力してください";
             } else if ("emptyfields".equals(errorParam)) {
                 // 入力項目が空の場合
                 errorMsg = "ユーザーIDとパスワードを入力してください";
