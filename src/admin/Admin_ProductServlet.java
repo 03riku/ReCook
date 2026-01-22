@@ -8,37 +8,63 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import bean.Product;
-import dao.AdminDAO; // Đã đổi từ ProductDAO sang AdminDAO
+import dao.AdminDAO;
 
+/**
+ * 商品管理（一覧表示、検索、追加、更新、削除）を行うサーブレット
+ */
 @WebServlet("/product/Admin_ProductServlet")
 public class Admin_ProductServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // Khởi tạo AdminDAO thay vì ProductDAO
     private AdminDAO adminDao = new AdminDAO();
 
+    /**
+     * GETリクエスト処理：商品一覧画面の表示
+     * - 検索機能
+     * - リダイレクト後のメッセージ表示（Flash Scope的な処理）
+     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
+
+        // --- リダイレクト後のメッセージ処理 ---
+        // doPostで保存されたセッションメッセージを取得し、リクエスト属性に移す
+        // これにより、画面更新(F5)してもメッセージが消える（Flash Message）
+        HttpSession session = request.getSession();
+        String sessionMessage = (String) session.getAttribute("message");
+        if (sessionMessage != null) {
+            request.setAttribute("message", sessionMessage);
+            session.removeAttribute("message"); // 一度表示したら削除
+        }
+
+        // 検索キーワードの取得
         String searchName = request.getParameter("searchName");
 
         try {
             List<Product> products;
-            // Gọi hàm từ adminDao
+
+            // 検索キーワードの有無によって処理を分岐
             if (searchName != null && !searchName.trim().isEmpty()) {
+                // 部分一致検索
                 products = adminDao.searchProducts(searchName.trim());
             } else {
+                // 全件取得
                 products = adminDao.getAllProducts();
             }
+            // カテゴリドロップダウン用のリスト取得
             List<String> categories = adminDao.getAllCategories();
 
+            // JSPへデータを渡す
             request.setAttribute("products", products);
             request.setAttribute("categories", categories);
             request.setAttribute("lastSearch", searchName);
 
+            // 一覧画面へフォワード
             request.getRequestDispatcher("/admin/product/Ad_Product.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -47,13 +73,18 @@ public class Admin_ProductServlet extends HttpServlet {
         }
     }
 
+    /**
+     * POSTリクエスト処理：データの保存（追加・更新）および削除
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
+        HttpSession session = request.getSession(); // セッション取得
 
         try {
+            // --- 保存処理 (追加 / 更新) ---
             if ("save".equals(action)) {
                 String idStr = request.getParameter("productId");
                 String name = request.getParameter("productName");
@@ -68,32 +99,55 @@ public class Admin_ProductServlet extends HttpServlet {
                     }
                 }
 
-                // Gọi hàm kiểm tra từ adminDao
-                if (adminDao.isProductNameExists(name, productId)) {
-                    request.setAttribute("error", "既に存在しています。");
+                // 1. カテゴリの入力チェック
+                if (category == null || category.trim().isEmpty()) {
+                    request.setAttribute("error", "カテゴリを入力してください。");
 
+                    // エラー時は入力値を保持して画面を再表示（フォワード）
                     Product p = new Product(productId, name, category);
                     request.setAttribute("editingProduct", p);
-
                     doGet(request, response);
                     return;
                 }
 
+                // 2. 商品名の重複チェック
+                if (adminDao.isProductNameExists(name, productId)) {
+                    request.setAttribute("error", "既に存在しています。");
+
+                    // エラー時は入力値を保持して画面を再表示（フォワード）
+                    Product p = new Product(productId, name, category);
+                    request.setAttribute("editingProduct", p);
+                    doGet(request, response);
+                    return;
+                }
+
+                // 3. DB保存処理実行
                 Product p = new Product(productId, name, category);
-                // Gọi hàm lưu từ adminDao
                 adminDao.saveOrUpdate(p);
 
-                request.setAttribute("message", "更新しました。");
+                // --- Post-Redirect-Get (PRG) パターン ---
+                // 二重送信を防ぐため、処理成功後はリダイレクトを行う。
+                // メッセージはリクエストではなくセッションに保存する。
+                session.setAttribute("message", "更新しました。");
 
+                // 一覧画面へリダイレクト (GETリクエストが発生)
+                response.sendRedirect(request.getContextPath() + "/product/Admin_ProductServlet");
+                return; // 処理終了
+
+            // --- 一括削除処理 ---
             } else if ("bulkDelete".equals(action)) {
                 String[] deleteIds = request.getParameterValues("deleteIds");
                 if (deleteIds != null && deleteIds.length > 0) {
-                    // Gọi hàm xóa từ adminDao
                     adminDao.bulkDelete(deleteIds);
-                    request.setAttribute("message", "削除しました。");
+
+                    // 削除完了後、メッセージをセッションに保存してリダイレクト
+                    session.setAttribute("message", "削除しました。");
+                    response.sendRedirect(request.getContextPath() + "/product/Admin_ProductServlet");
+                    return;
                 }
             }
 
+            // アクションが不明な場合は一覧を再表示
             doGet(request, response);
 
         } catch (Exception e) {
