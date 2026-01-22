@@ -21,7 +21,7 @@ public class UserDAO {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // --- ユーザー関連 ---
+    // --- 1. ユーザー管理（ログイン・登録） ---
     public GeneralUser checkLogin(String email, String password) throws Exception {
         String sql = "SELECT * FROM GENERAL_USER WHERE EMAIL = ? AND USER_PASSWORD = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -46,8 +46,7 @@ public class UserDAO {
         }
     }
 
-    // --- 料理メニュー関連 ---
-
+    // --- 2. 料理メニュー（詳細・検索・材料） ---
     public CookMenu getCookMenuById(int menuItemId, int userId) throws Exception {
         String sql = "SELECT * FROM COOK_MENU WHERE MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -55,7 +54,8 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 CookMenu menu = new CookMenu();
-                fillCookMenu(menu, rs);
+                fillCookMenu(menu, rs); // ここでエラーが出ていたメソッドを呼び出しています
+
                 String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
                 try (PreparedStatement psFav = con.prepareStatement(checkSql)) {
                     psFav.setInt(1, userId);
@@ -69,7 +69,6 @@ public class UserDAO {
         return null;
     }
 
-    // ★材料一覧の取得（PRODUCTテーブルと中間テーブルを使用）
     public List<String> getIngredientsByMenuId(int menuItemId) throws Exception {
         List<String> list = new ArrayList<>();
         String sql = "SELECT p.PRODUCT_NAME FROM PRODUCT p " +
@@ -133,13 +132,11 @@ public class UserDAO {
         return list;
     }
 
-    // --- お気に入り関連 ---
-
+    // --- 3. お気に入り管理 ---
     public void toggleFavorite(int userId, int menuItemId) throws Exception {
         String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(checkSql)) {
-            ps.setInt(1, userId);
-            ps.setInt(2, menuItemId);
+            ps.setInt(1, userId); ps.setInt(2, menuItemId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 String delSql = "DELETE FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
@@ -171,8 +168,7 @@ public class UserDAO {
         return list;
     }
 
-    // --- 店舗関連 ---
-
+    // --- 4. 店舗関連 ---
     public List<User_Store> getStoresByMenuItemId(int menuItemId) throws Exception {
         List<User_Store> list = new ArrayList<>();
         String sql = "SELECT s.* FROM STORE s JOIN STORE_MENU sm ON s.STORE_ID = sm.STORE_ID WHERE sm.MENU_ITEM_ID = ?";
@@ -241,6 +237,7 @@ public class UserDAO {
         return list;
     }
 
+    // --- ★これが不足していたメソッドです ---
     private void fillCookMenu(CookMenu menu, ResultSet rs) throws Exception {
         menu.setMenuItemId(rs.getInt("MENU_ITEM_ID"));
         menu.setDishName(rs.getString("DISH_NAME"));

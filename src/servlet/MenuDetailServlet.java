@@ -1,6 +1,8 @@
+
 package servlet;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,7 +23,6 @@ public class MenuDetailServlet extends HttpServlet {
         String idStr = request.getParameter("id");
         String fromStore = request.getParameter("fromStore");
 
-        // ログイン中のユーザーIDを取得（お気に入り判定用）
         HttpSession session = request.getSession();
         GeneralUser user = (GeneralUser) session.getAttribute("loginUser");
         int userId = (user != null) ? user.getUserId() : 0;
@@ -31,10 +32,11 @@ public class MenuDetailServlet extends HttpServlet {
                 int id = Integer.parseInt(idStr);
                 UserDAO dao = new UserDAO();
 
-                // お気に入り状態を含めた料理情報を取得
                 CookMenu menu = dao.getCookMenuById(id, userId);
+                List<String> ingredients = dao.getIngredientsByMenuId(id);
 
                 request.setAttribute("cookMenu", menu);
+                request.setAttribute("ingredientsList", ingredients);
                 request.setAttribute("showCoupon", "true".equals(fromStore));
 
                 request.getRequestDispatcher("/user/main/Us_RecipeDetail.jsp").forward(request, response);
