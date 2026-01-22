@@ -85,7 +85,7 @@ body { background-color: #F5F5F0; }
             <div class="col-md-5 d-flex flex-column">
                 <form action="<%= request.getContextPath() %>/super/addStoreProduct" method="post" class="d-flex flex-column h-100">
                     <div class="table-header-area">
-                        <h5 class="mb-0">商品マスタ一覧</h5>
+                        <h5 class="mb-0">商品一覧</h5>
                         <button type="submit" class="btn btn-sm btn-primary px-3">追加</button>
                     </div>
                     <div class="table-scroll-container">
