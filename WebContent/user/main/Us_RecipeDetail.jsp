@@ -1,6 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
+<%-- 文字エンコーディングを強制 --%>
+<% request.setCharacterEncoding("UTF-8"); %>
+
 <c:set var="menu" value="${cookMenu}" />
 <c:set var="pageTitle" value="レシピ詳細" scope="request" />
 
@@ -9,7 +12,6 @@
         body { background: rgb(238, 237, 234) !important; }
         .page-header { background-color: #ead1dc !important; }
 
-        /* 戻るボタン付きヘッダー */
         .header-bar {
             display: flex; align-items: center; padding: 10px;
             background: #fff; border-bottom: 1px solid #ddd;
@@ -17,34 +19,42 @@
         }
         .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 画像エリアの調整（スペルミス修正済み） */
-        .recipe-img-box { height: 220px; background: #ddd; overflow: hidden; border-bottom: 1px solid #000; }
+        .recipe-img-box { height: 220px; background: #ddd; overflow: hidden; border-bottom: 1px solid #000; text-align: center; }
         .recipe-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        .fav-btn { border: 1px solid #333; background: #fff; padding: 5px 10px; font-size: 0.9rem; text-decoration: none; color: #333; }
+        .fav-btn {
+            display: inline-block; border: 1px solid #333; background: #fff;
+            padding: 8px 15px; font-size: 0.9rem; text-decoration: none !important;
+            color: #333 !important; border-radius: 5px; cursor: pointer;
+        }
+
         .dashed-line { border-top: 2px dashed #999; margin: 20px 0; }
         .ingredient-box { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .coupon-btn { background: #ffff00; border: 2px solid #333; color: #333; font-weight: bold; padding: 15px; width: 100%; display: block; text-align: center; text-decoration: none; }
+
+        .coupon-btn { background: #ffff00; border: 2px solid #333; color: #333; font-weight: bold; padding: 15px; width: 100%; display: block; text-align: center; text-decoration: none; cursor: pointer; }
         .store-search-btn { background: #fff; border: 2px solid #333; color: #333; font-weight: bold; padding: 12px; width: 100%; display: block; text-align: center; text-decoration: none; }
+
+        #barcodeArea {
+            display: none; background: #fff; border: 2px solid #333;
+            padding: 20px; text-align: center; border-radius: 10px;
+        }
     </style>
 
-    <%-- ヘッダー（戻るボタン） --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <h5 class="mb-0 fw-bold">${menu.dishName}</h5>
     </div>
 
     <div class="container py-0 px-0" style="max-width: 500px;">
-
-        <%-- ★ 料理画像（omuraisu.png に修正済み） --%>
         <div class="recipe-img-box">
             <c:choose>
-                <c:when test="${menu.menuItemId == 1}">
-                    <img src="${pageContext.request.contextPath}/pic/omuraisu.png" alt="オムライス">
-                </c:when>
+                <c:when test="${menu.menuItemId == 1}"><img src="${pageContext.request.contextPath}/pic/omuraisu.png" alt="オムライス"></c:when>
+                <c:when test="${menu.menuItemId == 2}"><img src="${pageContext.request.contextPath}/pic/hanbaagu.png" alt="ハンバーグ"></c:when>
+                <c:when test="${menu.menuItemId == 3}"><img src="${pageContext.request.contextPath}/pic/sake teishoku.jpg" alt="鮭の塩焼き定食"></c:when>
+                <c:when test="${menu.menuItemId == 4}"><img src="${pageContext.request.contextPath}/pic/moyashi itame.jpg" alt="もやし炒め"></c:when>
                 <c:otherwise>
                     <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
-                        <i class="fas fa-utensils fa-4x mb-2"></i><br>料理画像（準備中）
+                        <i class="fas fa-utensils fa-4x mb-2"></i><br>料理画像
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -57,17 +67,15 @@
                     <div class="ps-3 fs-5">${menu.cookTime}分</div>
                 </div>
                 <div class="col-6 text-end">
-                    <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}" class="fav-btn shadow-sm"
-                       style="${menu.favoriteId == 2 ? 'background:#fff9c4; border-color:#fbc02d;' : ''}">
-                        <i class="${menu.favoriteId == 2 ? 'fas' : 'far'} fa-star" style="${menu.favoriteId == 2 ? 'color:#fbc02d;' : ''}"></i>
-                        ${menu.favoriteId == 2 ? 'お気に入り解除' : 'お気に入り登録'}
+                    <a href="${pageContext.request.contextPath}/user/User_FavoriteToggle?id=${menu.menuItemId}" class="fav-btn shadow-sm">
+                        <i class="${menu.favoriteId == 2 ? 'fas text-warning' : 'far'} fa-star"></i>
+                        ${menu.favoriteId == 2 ? '登録済み' : 'お気に入り'}
                     </a>
                 </div>
             </div>
 
             <div class="dashed-line"></div>
 
-            <%-- 材料一覧 --%>
             <div class="fw-bold mb-2">材料一覧</div>
             <div class="ingredient-box">
                 <ul class="mb-0">
@@ -80,7 +88,20 @@
             <p class="text-muted text-center">${menu.description}</p>
 
             <div class="mt-5">
-                <c:if test="${showCoupon}"><a href="${pageContext.request.contextPath}/user/main/Us_Discount.jsp" class="coupon-btn shadow-sm mb-3">クーポンを表示する</a></c:if>
+                <%-- ★クーポンボタンの出し分け条件 --%>
+                <%-- URLに fromStore=true がある時だけ表示される --%>
+                <c:if test="${param.fromStore == 'true'}">
+                    <a id="couponBtn" class="coupon-btn shadow-sm mb-3" onclick="showBarcode()">
+                        クーポンを表示する
+                    </a>
+
+                    <div id="barcodeArea" class="shadow-sm mb-3">
+                        <p class="fw-bold mb-2">会計時にご提示ください</p>
+                        <img src="${pageContext.request.contextPath}/pic/baakoodo.png" alt="バーコード" style="max-width: 100%; height: auto;">
+                    </div>
+                </c:if>
+
+                <%-- ★お店を探すボタン（これは検索から来ても常に表示） --%>
                 <a href="${pageContext.request.contextPath}/user/StoreByMenu?menuId=${menu.menuItemId}&dishName=${menu.dishName}" class="store-search-btn shadow-sm">
                     <i class="fas fa-map-marker-alt"></i> このクーポンが使えるお店を探す
                 </a>
@@ -88,5 +109,12 @@
             <div style="height: 50px;"></div>
         </div>
     </div>
+
+    <script>
+        function showBarcode() {
+            document.getElementById('barcodeArea').style.display = 'block';
+            document.getElementById('couponBtn').style.display = 'none';
+        }
+    </script>
 </c:set>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />

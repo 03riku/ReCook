@@ -1,7 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<c:set var="pageTitle" value="${pageTitle}" scope="request" />
+<%--
+  サーブレットから pageTitle が送られてきた場合はそれを使い、
+  ない場合（直接アクセスなど）は「店舗一覧」をデフォルトにします。
+--%>
+<c:set var="displayTitle" value="${not empty pageTitle ? pageTitle : '店舗一覧'}" scope="request" />
+<c:set var="pageTitle" value="${displayTitle}" scope="request" />
 
 <c:set var="pageBody" scope="request">
 
@@ -17,7 +22,7 @@
         }
         .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 検索バーと県選択を横に並べる */
+        /* 検索バーエリア */
         .search-area { display: flex; gap: 10px; margin: 15px; }
         .pref-select {
             border: 2px solid #333; border-radius: 10px;
@@ -29,22 +34,20 @@
         }
         .store-search-input { border: none !important; flex-grow: 1; padding-left: 10px; outline: none; }
 
-        /* 店舗カード：中央揃えの縦並び */
+        /* 店舗カードデザイン */
         .store-box {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             height: 150px; width: 100%;
-            border: 1px solid #000; color: #333; text-decoration: none;
+            border: 1px solid #000; color: #333 !important; text-decoration: none !important;
             padding: 10px; transition: opacity 0.2s;
             margin-bottom: -1px; margin-right: -1px;
         }
-        .store-box:hover { opacity: 0.8; color: #333; }
+        .store-box:hover { opacity: 0.8; }
         .bg-blue { background-color: #9fc5e8 !important; }
         .bg-white { background-color: #ffffff !important; }
 
-        /* =========================
-           下部固定ナビ
-           ========================= */
+        /* 下部固定ナビ */
         .bottom-nav a{ position: relative; padding-bottom: 10px; }
         .bottom-nav a::after{
             content: ""; position: absolute; left: 50%; bottom: 2px;
@@ -60,50 +63,60 @@
         .bottom-nav a.bar-store   { --bar-color:#fff2cc; }
         .bottom-nav a.bar-account { --bar-color:#ead1dc; }
 
-        /* 下部ナビと被らないように余白確保 */
         .page-safe-bottom{ padding-bottom: 90px; }
     </style>
 
-    <%-- ★画面上部の戻るボタンバー --%>
+    <%-- ヘッダーバー：タイトルを動的に表示 --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
-        <h5 class="mb-0 fw-bold">店舗一覧</h5>
+        <h5 class="mb-0 fw-bold">${pageTitle}</h5>
     </div>
 
     <div class="container py-3 page-safe-bottom" style="max-width: 500px;">
-        <form action="${pageContext.request.contextPath}/user/StoreList" method="get">
-            <div class="search-area">
-                <!-- 県選択 -->
-                <select name="pref" class="pref-select">
-                    <option value="">全ての県</option>
-                    <c:forEach var="p" items="${prefList}">
-                        <option value="${p}" ${param.pref == p ? 'selected' : ''}>${p}</option>
-                    </c:forEach>
-                </select>
-                <!-- キーワード検索 -->
-                <div class="store-search-group shadow-sm">
-                    <input type="text" name="keyword" class="store-search-input"
-                           placeholder="店名で検索" value="${param.keyword}">
-                    <button class="btn btn-white border-0 text-secondary" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-        </form>
 
+        <%-- 通常の店舗一覧の場合のみ、検索フォームを表示する（任意設定） --%>
+        <c:if test="${empty param.menuId}">
+            <form action="${pageContext.request.contextPath}/user/StoreList" method="get">
+                <div class="search-area">
+                    <select name="pref" class="pref-select">
+                        <option value="">全ての県</option>
+                        <c:forEach var="p" items="${prefList}">
+                            <option value="${p}" ${param.pref == p ? 'selected' : ''}>${p}</option>
+                        </c:forEach>
+                    </select>
+                    <div class="store-search-group shadow-sm">
+                        <input type="text" name="keyword" class="store-search-input"
+                               placeholder="店名で検索" value="${param.keyword}">
+                        <button class="btn btn-white border-0 text-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </c:if>
+
+        <%-- 店舗リストの表示 --%>
         <div class="row g-0">
             <c:forEach var="s" items="${storeList}" varStatus="status">
                 <div class="col-6">
+                    <%-- お店を選択したら、そのお店のメニュー画面へ（店舗限定オムライスが見れるようになります） --%>
                     <a href="${pageContext.request.contextPath}/user/StoreMenu?id=${s.storeId}"
                        class="store-box ${status.index % 4 == 0 || status.index % 4 == 3 ? 'bg-white' : 'bg-blue'}">
-                        <!-- 住所を店名の上に小さく表示 -->
                         <div style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">${s.storeAddress}</div>
-                        <!-- 店舗名を太字で表示 -->
                         <div style="font-weight: bold;">${s.storeName}</div>
                     </a>
                 </div>
             </c:forEach>
         </div>
+
+        <%-- 該当がない場合のメッセージ --%>
+        <c:if test="${empty storeList}">
+            <div class="text-center py-5">
+                <i class="fas fa-store-slash fa-3x mb-3 text-muted"></i>
+                <p class="text-muted">該当するお店が見つかりませんでした。</p>
+                <a href="${pageContext.request.contextPath}/user/StoreList" class="btn btn-outline-secondary btn-sm">店舗一覧に戻る</a>
+            </div>
+        </c:if>
     </div>
 
     <%-- 下部固定ナビゲーション --%>
@@ -111,19 +124,15 @@
       <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
          class="text-dark text-decoration-none text-center bar-home"
          style="min-width:60px;">ホーム</a>
-
       <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
          class="text-dark text-decoration-none text-center bar-search"
          style="min-width:60px;">検索</a>
-
       <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
          class="text-dark text-decoration-none text-center bar-recipe"
          style="min-width:60px;">料理提案</a>
-
       <a href="${pageContext.request.contextPath}/user/StoreList"
          class="text-dark text-decoration-none text-center bar-store active"
          style="min-width:60px;">店舗</a>
-
       <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
          class="text-dark text-decoration-none text-center bar-account"
          style="min-width:60px;">アカウント</a>
