@@ -105,15 +105,58 @@ public class AdminDAO extends DAO {
         }
     }
 
-    /** 複数の商品をまとめて一括削除する */
+    /** * 複数の商品をまとめて一括削除する
+     * (修正済み: 外部キー制約エラーを防ぐため、子テーブルから先に削除します)
+     */
     public void bulkDelete(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) return;
-        StringBuilder sql = new StringBuilder("DELETE FROM product WHERE product_id IN (");
-        for (int i = 0; i < ids.length; i++) sql.append(i == 0 ? "?" : ",?");
-        sql.append(")");
-        try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement(sql.toString())) {
-            for (int i = 0; i < ids.length; i++) st.setInt(i + 1, Integer.parseInt(ids[i]));
-            st.executeUpdate();
+
+        Connection con = null;
+        try {
+            con = getConnection();
+            // トランザクション開始
+            con.setAutoCommit(false);
+
+            // IDリストのプレースホルダを作成 (?,?,?)
+            StringBuilder idStr = new StringBuilder();
+            for (int i = 0; i < ids.length; i++) {
+                idStr.append(i == 0 ? "?" : ",?");
+            }
+            String params = "(" + idStr.toString() + ")";
+
+            // 1. 先に関連する子テーブル (product_cook_menu) から削除する
+            String sqlChild = "DELETE FROM product_cook_menu WHERE product_id IN " + params;
+            try (PreparedStatement st = con.prepareStatement(sqlChild)) {
+                for (int i = 0; i < ids.length; i++) {
+                    st.setInt(i + 1, Integer.parseInt(ids[i]));
+                }
+                st.executeUpdate();
+            }
+
+            //
+
+            // 2. その後、親テーブル (product) を削除する
+            String sqlParent = "DELETE FROM product WHERE product_id IN " + params;
+            try (PreparedStatement st = con.prepareStatement(sqlParent)) {
+                for (int i = 0; i < ids.length; i++) {
+                    st.setInt(i + 1, Integer.parseInt(ids[i]));
+                }
+                st.executeUpdate();
+            }
+
+            // コミット (確定)
+            con.commit();
+
+        } catch (Exception e) {
+            // エラーが発生したらロールバック
+            if (con != null) con.rollback();
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (con != null) {
+                con.setAutoCommit(true);
+                con.close();
+            }
         }
     }
 
