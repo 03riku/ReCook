@@ -1,48 +1,59 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
+<%-- 1. ページの設定：ブラウザのタブ名や、共通ヘッダーに表示される名前を設定 --%>
 <c:set var="pageTitle" value="料理検索" scope="request" />
 
+<%-- 2. ページの中身（pageBody）の開始 --%>
 <c:set var="pageBody" scope="request">
   <style>
-    /* 横スクロールバー対策 */
+    /* --- 全体のレイアウト設定 --- */
+
+    /* 横スクロールが出て画面がガタつくのを防ぐ設定 */
     html, body {
       overflow-x: hidden !important;
     }
 
-    /* ページ背景 */
+    /* 画面全体の背景を薄いグレーに設定 */
     body {
       background: rgb(238, 237, 234) !important;
     }
 
+    /* ヘッダー（base.jspにある共通見出し）の色：検索画面のテーマカラーは青 */
     .page-header { background-color: #c9daf8 !important; }
 
-    /* ロゴ枠 */
+    /* ロゴを囲む白い枠のデザイン */
     .logo-box{
-      border: 2px solid #000;
-      background: #fff;
-      padding: 18px 22px;
-      display: inline-block;
-      border-radius: 8px;
+      border: 2px solid #000;     /* 黒い枠線 */
+      background: #fff;           /* 枠の中を白くする */
+      padding: 18px 22px;         /* ロゴの周りに余白を作る */
+      display: inline-block;      /* ロゴの大きさに合わせて枠を縮める */
+      border-radius: 8px;         /* カドを少し丸くする */
     }
+
+    /* ロゴ画像自体の大きさ調整 */
     .logo-img{
       max-height: 140px;
       width: auto;
     }
 
-    /* 検索バーのデザイン */
+    /* --- 検索バーのデザイン --- */
     .search-input-group {
-      border: 2px solid #28a745;
-      border-radius: 10px;
+      border: 2px solid #28a745;  /* 緑色の枠線 */
+      border-radius: 10px;        /* カドを丸く */
       overflow: hidden;
       background-color: #fff;
     }
+
+    /* 入力する場所の設定 */
     .search-input {
       border: none !important;
       height: 55px;
       font-size: 1.2rem;
       box-shadow: none !important;
     }
+
+    /* 虫眼鏡ボタンの設定 */
     .search-btn {
       background-color: transparent;
       border: none;
@@ -51,11 +62,13 @@
       font-size: 1.3rem;
     }
 
-    /* 下部固定ナビのデザイン */
+    /* --- 下部固定メニューの「動く線」の設定 --- */
     .bottom-nav a{
       position: relative;
       padding-bottom: 10px;
     }
+
+    /* 線の初期状態（透明・幅ゼロ） */
     .bottom-nav a::after{
       content: "";
       position: absolute;
@@ -64,28 +77,30 @@
       width: 70%;
       height: 5px;
       background-color: var(--bar-color, #c9daf8);
-      transform: translateX(-50%) scaleX(0);
+      transform: translateX(-50%) scaleX(0); /* 最初は幅を0にして隠しておく */
       transform-origin: center;
       border-radius: 2px;
       transition: transform 0.15s ease;
     }
-    .bottom-nav a:hover::after{
-      transform: translateX(-50%) scaleX(1);
-    }
+
+    /* ホバー時や「active（現在地）」の時に線をシュッと表示させる */
+    .bottom-nav a:hover::after,
     .bottom-nav a.active::after{
       transform: translateX(-50%) scaleX(1) !important;
     }
 
-    .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
-    .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
-    .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
-    .bottom-nav a.bar-store   { --bar-color:#fff2cc; }
-    .bottom-nav a.bar-account { --bar-color:#ead1dc; }
+    /* 各メニューごとのテーマカラー設定 */
+    .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：薄ピンク */
+    .bottom-nav a.bar-search  { --bar-color:#c9daf8; } /* 検索：青 */
+    .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; } /* 料理提案：緑 */
+    .bottom-nav a.bar-store   { --bar-color:#fff2cc; } /* 店舗：黄 */
+    .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：ピンク */
   </style>
 
+  <%-- 3. メインコンテンツ：中央に配置するための枠組み --%>
   <div class="container py-4" style="max-width: 500px;">
 
-    <%-- ロゴセクション --%>
+    <%-- ロゴ部分 --%>
     <div class="text-center mb-4">
       <div class="logo-box">
         <img src="${pageContext.request.contextPath}/pic/recook_logo.png"
@@ -93,29 +108,35 @@
       </div>
     </div>
 
-    <%-- 検索フォームセクション --%>
+    <%-- 4. 検索フォーム：入力されたキーワードを User_SearchServlet へ送る --%>
     <div class="row justify-content-center px-3 mx-0">
       <div class="col-12 px-0">
-        <%-- ★ actionの中身をサーブレットのURLパターン(/user/Search)に合わせる --%>
+        <%-- action: データの送り先（サーブレットのURL）
+             method="get": キーワード検索なのでURLに検索ワードをのせる「GET」方式を使用 --%>
         <form action="${pageContext.request.contextPath}/user/Search" method="get">
           <div class="input-group search-input-group shadow-sm">
+            <%-- 検索実行ボタン（虫眼鏡） --%>
             <button class="search-btn" type="submit"><i class="fas fa-search"></i></button>
-            <%-- name属性はサーブレットのgetParameterと一致させる --%>
+
+            <%-- キーワード入力欄
+                 name="keyword": サーブレットがこの名前を頼りに中身を読み取ります --%>
             <input type="text" name="keyword" class="form-control search-input" placeholder="料理名や食材を入力">
           </div>
         </form>
       </div>
     </div>
 
+    <%-- 下部メニューに隠れないように余白を作る --%>
     <div style="height: 90px;"></div>
   </div>
 
-  <%-- 下部固定ナビゲーション --%>
+  <%-- 5. 下部固定ナビゲーション：常に画面の下に表示されるメニュー --%>
   <nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
     <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
        class="text-dark text-decoration-none text-center bar-home"
        style="min-width: 60px;">ホーム</a>
 
+    <%-- 現在のページ（検索）なので "active" クラスを付与して線を常に表示 --%>
     <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
        class="text-dark text-decoration-none text-center bar-search active"
        style="min-width: 60px;">検索</a>
@@ -135,4 +156,5 @@
 
 </c:set>
 
+<%-- 6. 最後に土台となる base.jsp を読み込んで、上記の中身をはめ込む --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />

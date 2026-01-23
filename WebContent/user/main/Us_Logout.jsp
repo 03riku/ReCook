@@ -1,26 +1,27 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<%-- タイトル設定 --%>
+<%-- 1. ページの設定：ブラウザのタブ名や、見出しになる名前を設定 --%>
 <c:set var="pageTitle" value="ログアウト" scope="request" />
 
-<%-- 画面の中身を設定 --%>
+<%-- 2. ページの中身（pageBody）の開始 --%>
 <c:set var="pageBody" scope="request">
 
-	<%-- ★この画面専用のスタイル --%>
 	<style>
-		 /* ★ページの余白（白い部分）をこの背景色にする */
+		/* --- 見た目の設定（CSS） --- */
+
+		/* 画面全体の背景を薄いグレーに設定 */
     	body {
       		background: rgb(238, 237, 234) !important;
     	}
 
-		/* ヘッダー色をピンクに */
+		/* ヘッダー（base.jspにある共通見出し）の色設定：アカウント関連なのでピンク */
 		.page-header {
 			background-color: #ead1dc !important;
 		}
 
-		/* Yes/Noボタンのスタイル */
+		/* 「Yes」「No」ボタンのデザイン設定 */
 		.confirm-btn {
 			display: block;
 			width: 100%;
@@ -31,70 +32,65 @@
 			text-decoration: none;
 			font-size: 1.2rem;
 			text-align: center;
-			transition: background-color 0.2s;
+			transition: background-color 0.2s; /* ホバー時の色の変化を滑らかにする */
 		}
+		/* ボタンにマウスを乗せた（タップした）時の色 */
 		.confirm-btn:hover {
 			background-color: #f0f0f0;
 			color: #333;
 		}
 
-		/* =========================
-           ★下部固定ナビ：ホバーで下に色バー（色分け対応）
-           ========================= */
-        .bottom-nav a{
+		/* --- 下部固定メニューの「動く線」の設定 --- */
+        .bottom-nav a {
             position: relative;
-            padding-bottom: 10px; /* バー分 */
+            padding-bottom: 10px;
         }
 
-        /* バー本体（色は --bar-color で決まる） */
-        .bottom-nav a::after{
+        /* 線の初期状態（透明・幅ゼロ） */
+        .bottom-nav a::after {
             content: "";
             position: absolute;
             left: 50%;
             bottom: 2px;
             width: 70%;
             height: 5px;
-            background-color: var(--bar-color, #c9daf8); /* デフォルト */
-            transform: translateX(-50%) scaleX(0);
+            background-color: var(--bar-color, #c9daf8);
+            transform: translateX(-50%) scaleX(0); /* 最初は幅を0にして隠しておく */
             transform-origin: center;
             border-radius: 2px;
             transition: transform 0.15s ease;
         }
 
-        /* ホバーで表示 */
-        .bottom-nav a:hover::after{
+        /* ホバー時や「active（現在地）」の時に線をシュッと表示させる */
+        .bottom-nav a:hover::after,
+        .bottom-nav a.active::after {
             transform: translateX(-50%) scaleX(1);
         }
 
-        /* 今いるページは常に表示（アカウント画面のグループなので active を付与） */
-        .bottom-nav a.active::after{
-            transform: translateX(-50%) scaleX(1) !important;
-        }
-
-        /* ====== 色分け（好きに変更OK） ====== */
-        .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：薄いピンク */
+        /* --- 各メニューごとのテーマカラー設定 --- */
+        .bottom-nav a.bar-home    { --bar-color:#ffe5d9; } /* ホーム：薄ピンク */
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; } /* 検索：青 */
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; } /* 料理提案：緑 */
         .bottom-nav a.bar-store   { --bar-color:#fff2cc; } /* 店舗：黄 */
-        .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：ピンク */
+        .bottom-nav a.bar-account { --bar-color:#ead1dc; } /* アカウント：濃いピンク */
 
 	</style>
 
+	<%-- 3. メインコンテンツ：確認メッセージとボタン --%>
 	<div class="container text-center py-5" style="max-width: 500px;">
 
-		<%-- メッセージエリア --%>
 		<div class="py-5 mt-4">
 			<h3 class="mb-5 fw-bold">ログアウトしますか？</h3>
 
 			<div class="row justify-content-center g-3">
-				<%-- Yesボタン：実際にログアウト処理を行うサーブレットを呼び出します --%>
+				<%-- Yesボタン：User_LogoutServletを呼び出し、サーバー上のログイン情報を消去してログイン画面へ戻る --%>
 				<div class="col-5">
 					<a href="${pageContext.request.contextPath}/User_LogoutServlet" class="confirm-btn">
 						Yes
 					</a>
 				</div>
 
-				<%-- Noボタン：ログアウトせずにアカウント画面に戻ります --%>
+				<%-- Noボタン：何もせず、前のアカウント管理画面に戻る --%>
 				<div class="col-5">
 					<a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp" class="confirm-btn">
 						No
@@ -105,7 +101,7 @@
 
 	</div>
 
-	<%-- 下部固定ナビゲーション --%>
+	<%-- 4. 下部固定ナビゲーション：常に画面の下に表示されるメニュー --%>
 	<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
       <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
          class="text-dark text-decoration-none text-center bar-home"
@@ -123,6 +119,7 @@
          class="text-dark text-decoration-none text-center bar-store"
          style="min-width: 60px;">店舗</a>
 
+      <%-- 現在のページ（アカウント関連）なので "active" クラスを付与して線を常に表示 --%>
       <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
          class="text-dark text-decoration-none text-center bar-account active"
          style="min-width: 60px;">アカウント</a>
@@ -130,5 +127,5 @@
 
 </c:set>
 
-<%-- base.jspを呼び出し --%>
+<%-- 5. 最後に土台となる base.jsp を読み込んで、上記の中身をはめ込む --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
