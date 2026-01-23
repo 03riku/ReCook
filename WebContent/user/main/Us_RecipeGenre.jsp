@@ -57,7 +57,7 @@
 		<div class="py-5 mb-5 border rounded" style="background-color: #f7f7f7;">
 			<img src="${pageContext.request.contextPath}/pic/recook_logo.png" alt="Re.Cook Logo" class="img-fluid" style="max-height: 100px; max-width: 90%;">
 		</div>
-		
+
 		<div class="row g-3">
 			<%-- 和食 (GENRE_ID: 1) --%>
 			<div class="col-6">
