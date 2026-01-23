@@ -36,12 +36,21 @@
 			<p class="text-muted small">必要な情報を入力してください</p>
 		</div>
 
-		<%-- エラーメッセージ表示 --%>
-		<c:if test="${not empty param.error}">
-			<div class="alert alert-danger text-center p-2 mb-4" role="alert">
-				登録に失敗しました。<br>入力内容を確認してください。
-			</div>
-		</c:if>
+		<%-- ■ エラーメッセージ表示エリア --%>
+		<c:choose>
+			<%-- メールアドレスが既に登録されている場合 --%>
+			<c:when test="${param.error == 'email_exists'}">
+				<div class="alert alert-danger text-center p-2 mb-4" role="alert">
+					このメールアドレスは登録されています。
+				</div>
+			</c:when>
+			<%-- その他の登録失敗エラーの場合 --%>
+			<c:when test="${not empty param.error}">
+				<div class="alert alert-danger text-center p-2 mb-4" role="alert">
+					登録に失敗しました。<br>入力内容を確認してください。
+				</div>
+			</c:when>
+		</c:choose>
 
 		<%-- ■ 新規登録フォーム：action先を User_SignupServlet に修正 --%>
 		<form action="${pageContext.request.contextPath}/User_SignupServlet" method="post">
