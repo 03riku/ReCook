@@ -5,22 +5,21 @@
 <%@ page import="bean.Product" %>
 
 <%!
-    // Body 1: 料理一覧（検索バーのデザインを Ad_Product.jsp に合わせました）
+    // Body 1: 料理一覧リスト (検索フォーム + 削除機能付きテーブル)
     private String createBody1Content(List<String[]> recipes, List<CookMenu> fullRecipes, String contextPath) {
         StringBuilder sb = new StringBuilder();
         sb.append("<h4 class=\"mb-4 text-dark\">料理一覧</h4>");
 
-        // --- 検索フォーム (Ad_Product.jsp と同じデザイン) ---
+        // --- 検索フォーム ---
         sb.append("<form action=\"RecipeServlet\" method=\"get\" class=\"mb-4\">");
         sb.append("<div class=\"input-group\">");
-        // class="form-control form-control-line" を適用
         sb.append("<input type=\"text\" name=\"searchName\" class=\"form-control form-control-line\" placeholder=\"料理名で検索...\">");
         sb.append("<button class=\"btn btn-dark\" type=\"submit\">検索</button>");
         sb.append("</div>");
         sb.append("</form>");
         // ----------------------------------------------------
 
-        // 削除フォーム & 一覧テーブル
+        // --- 一括削除フォーム & データテーブル ---
         sb.append("<form id=\"BulkDeleteForm\" action=\"RecipeServlet\" method=\"post\">");
         sb.append("<input type=\"hidden\" name=\"action\" value=\"bulkDelete\">");
 
@@ -30,7 +29,7 @@
         sb.append("<th>料理名</th>");
         sb.append("<th style=\"width: 80px; text-align: center;\">");
 
-        // 削除ボタン (チェックボックス選択時に表示)
+        // 削除ボタン (チェックボックス選択時にJSで表示切り替え)
         sb.append("<div id=\"deleteBtnContainer\" style=\"display: none;\">");
         sb.append("<button type=\"button\" onclick=\"showDeleteConfirmation()\" class=\"btn btn-danger btn-sm\">削除</button>");
         sb.append("</div>");
@@ -40,16 +39,19 @@
 
         if (recipes != null && !recipes.isEmpty()) {
             for (int i = 0; i < recipes.size(); i++) {
-                String[] r = recipes.get(i);
-                CookMenu detail = fullRecipes.get(i);
+                String[] r = recipes.get(i); // 簡易データ
+                CookMenu detail = fullRecipes.get(i); // 詳細データ (Productリスト含む)
 
                 String id = r[0];
                 String name = r[1];
                 String genre = r[2];
                 String time = r[3];
+                // JSのエラー回避のためエスケープ処理 (改行や引用符)
                 String descSafe = (detail.getDescription() != null) ? detail.getDescription().replace("\"", "&quot;").replace("\n", "\\n").replace("\r", "") : "";
                 String imageName = (detail.getImage() != null) ? detail.getImage() : "";
 
+                // --- 使用食材(Product)リストをJSON配列文字列に変換 ---
+                // 編集ボタンを押した際に、JSの fillForm 関数に渡すため
                 StringBuilder tagsJson = new StringBuilder("[");
                 if(detail.getProductList() != null) {
                     for(int k=0; k<detail.getProductList().size(); k++) {
@@ -61,17 +63,21 @@
 
                 sb.append("<tr>");
                 sb.append("<td><span class=\"me-2\">・</span>");
+
+                // 料理名リンク: クリックすると fillForm JS関数を呼び出し、右側のフォームに情報をセットする
                 sb.append("<a href=\"#\" class=\"text-dark text-decoration-none\" onclick='fillForm(")
                   .append("\"").append(id).append("\", ")
                   .append("\"").append(name.replace("'", "\\'")).append("\", ")
                   .append("\"").append(genre).append("\", ")
                   .append("\"").append(time).append("\", ")
                   .append("\"").append(descSafe).append("\", ")
-                  .append(tagsJson.toString()).append(", ")
+                  .append(tagsJson.toString()).append(", ") // 生成したJSON配列
                   .append("\"").append(imageName).append("\"")
                   .append("); return false;'>");
                 sb.append(name);
                 sb.append("</a></td>");
+
+                // 削除用チェックボックス
                 sb.append("<td style=\"text-align: center;\">");
                 sb.append("<input type=\"checkbox\" name=\"deleteIds\" value=\"").append(id).append("\" data-name=\"").append(name).append("\" class=\"recipe-checkbox\" onchange=\"toggleDeleteButton()\">");
                 sb.append("</td></tr>");
@@ -83,11 +89,11 @@
         return sb.toString();
     }
 
-    // Body 2: 入力フォーム + 通知メッセージ
+    // Body 2: 入力フォーム(追加/編集) + 通知メッセージ + 削除確認画面
     private String createBody2Content(List<String> categories, String message, String error) {
         StringBuilder sb = new StringBuilder();
 
-        // --- 通知メッセージ (クリックで消える) ---
+        // --- 通知メッセージ (成功/失敗) ---
         if (error != null && !error.isEmpty()) {
             sb.append("<div class=\"alert alert-danger alert-dismissible fade show mb-4 custom-alert\" role=\"alert\">");
             sb.append("<i class=\"bi bi-exclamation-triangle-fill me-2\"></i>").append(error);
@@ -99,20 +105,23 @@
             sb.append("<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button></div>");
         }
 
+        // --- 編集・追加モードコンテナ ---
         sb.append("<div id=\"editModeContainer\">");
         sb.append("<h4 class=\"mb-4 text-dark\">料理編集・追加</h4>");
 
+        // enctype="multipart/form-data" は画像アップロードに必須
         sb.append("<form id=\"RecipeActionForm\" action=\"RecipeServlet\" method=\"post\" enctype=\"multipart/form-data\" onsubmit=\"return validateForm()\">");
         sb.append("<input type=\"hidden\" id=\"editId\" name=\"recipeId\">");
         sb.append("<input type=\"hidden\" name=\"action\" value=\"save\">");
 
         sb.append("<div class=\"row\">");
 
-        // --- 左カラム ---
+        // --- 左カラム (基本情報 + 食材タグ機能) ---
         sb.append("<div class=\"col-md-7\">");
         sb.append("<div class=\"mb-3\"><label class=\"form-label fw-bold\">料理名</label>");
         sb.append("<input type=\"text\" id=\"editName\" name=\"recipeName\" class=\"form-control form-control-line\" required></div>");
 
+        // ジャンル選択
         sb.append("<div class=\"mb-3 position-relative\"><label class=\"form-label fw-bold\">ジャンル</label>");
         sb.append("<select id=\"editCategory\" name=\"category\" class=\"form-select form-control-line\" onchange=\"clearGenreError()\">");
         sb.append("<option value=\"\" disabled selected>選択してください</option>");
@@ -125,25 +134,32 @@
         sb.append("<div id=\"genreError\" class=\"text-danger small mt-1\" style=\"display: none;\"><i class=\"bi bi-exclamation-circle\"></i> ジャンルを選択してください</div>");
         sb.append("</div>");
 
+        // ★食材(Product)検索とタグ追加機能
         sb.append("<div class=\"mb-3 position-relative\"><label class=\"form-label fw-bold\">使用商品 (Product)</label>");
         sb.append("<div class=\"input-group mb-2\">");
+        // 検索窓 (入力時にJSで候補を表示)
         sb.append("<input type=\"text\" id=\"productSearchInput\" class=\"form-control\" placeholder=\"商品名を入力...\" autocomplete=\"off\" oninput=\"handleProductInput(this)\">");
         sb.append("<button class=\"btn btn-outline-secondary\" type=\"button\" onclick=\"addProductTag()\">追加</button>");
         sb.append("</div>");
+        // オートコンプリート候補リスト表示エリア
         sb.append("<ul id=\"suggestionList\" class=\"list-group position-absolute w-100 shadow\" style=\"z-index: 1000; display: none; max-height: 200px; overflow-y: auto;\"></ul>");
         sb.append("<div id=\"productNotFoundError\" class=\"text-danger small mb-2\" style=\"display: none;\"><i class=\"bi bi-x-circle\"></i> 商品のデータ見つかりません。</div>");
+
+        // 選択されたタグが表示されるエリア
         sb.append("<div id=\"productTagsContainer\" class=\"border rounded p-2 bg-white\" style=\"min-height: 60px;\">");
         sb.append("<small class=\"text-muted fst-italic ms-1\">追加された商品はここに表示されます</small></div>");
+
+        // サーバー送信用の hidden input が追加されるコンテナ
         sb.append("<div id=\"hiddenProductInputs\"></div></div>");
         sb.append("</div>");
 
-        // --- 右カラム ---
+        // --- 右カラム (画像 + 時間) ---
         sb.append("<div class=\"col-md-5\">");
 
         sb.append("<div class=\"mb-3\">");
         sb.append("<label class=\"form-label fw-bold\">写真</label>");
 
-        // 画像プレビューエリア
+        // 画像プレビューエリア (編集時またはアップロード選択時に表示)
         sb.append("<div id=\"imagePreviewContainer\" class=\"mb-2 p-1 border rounded text-center\" style=\"display:none; background-color: #f8f9fa;\">");
         sb.append("<img id=\"imagePreview\" src=\"\" alt=\"Current Image\" style=\"max-width: 100%; max-height: 200px; height: auto; display: block; margin: 0 auto;\">");
         sb.append("<div class=\"small text-muted mt-1\">現在の写真</div>");
@@ -157,15 +173,17 @@
         sb.append("<input type=\"number\" id=\"editTime\" name=\"cookTime\" class=\"form-control form-control-line\" min=\"1\" placeholder=\"例: 30\"></div>");
         sb.append("</div></div>");
 
+        // 料理説明
         sb.append("<div class=\"row mt-2\"><div class=\"col-12\"><label class=\"form-label fw-bold\">料理説明</label>");
         sb.append("<textarea id=\"editDesc\" name=\"recipeDescription\" class=\"form-control\" rows=\"4\" required></textarea></div></div>");
 
+        // アクションボタン
         sb.append("<div class=\"row mt-4\"><div class=\"col-12 d-flex justify-content-end gap-3\">");
         sb.append("<button type=\"button\" onclick=\"resetForm()\" class=\"btn btn-outline-dark btn-large-stacked\">クリア</button>");
         sb.append("<button type=\"submit\" class=\"btn btn-dark btn-large-stacked\">追加/更新</button>");
         sb.append("</div></div></form></div>");
 
-        // 3. 削除確認画面
+        // --- 削除確認画面 (通常は非表示) ---
         sb.append("<div id=\"deleteConfirmContainer\" style=\"display: none;\">");
         sb.append("<h4 class=\"mb-4 text-danger\">削除の確認</h4>");
         sb.append("<div class=\"alert alert-light border border-danger mb-4\"><p class=\"fw-bold\">以下の料理が削除されます。よろしいですか？</p><ul id=\"selectedItemsList\" class=\"list-group list-group-flush\"></ul></div>");
@@ -176,15 +194,20 @@
 %>
 
 <%
+    // コントローラー(Servlet)からのデータ受け取り
     request.setAttribute("pageTitle", "料理管理");
     List<String[]> recipeList = (List<String[]>) request.getAttribute("recipes");
     List<CookMenu> fullRecipes = (List<CookMenu>) request.getAttribute("recipeObjects");
     List<String> categories = (List<String>) request.getAttribute("categories");
+
+    // オートコンプリート用の全商品リスト(JSON文字列)
     String jsonAllProductNames = (String) request.getAttribute("jsonAllProductNames");
     if(jsonAllProductNames == null) jsonAllProductNames = "[]";
+
     String message = (String) request.getAttribute("message");
     String error = (String) request.getAttribute("error");
 
+    // HTML生成
     String body1Content = createBody1Content(recipeList, fullRecipes, request.getContextPath());
     String body2Content = createBody2Content(categories, message, error);
 
@@ -195,7 +218,7 @@
 <c:import url="../../admin/Ad_base.jsp" />
 
 <style>
-    /* CSS: Ad_Product.jsp のスタイルと同期 */
+    /* フォームのスタイル設定 */
     .form-control-line {
         border: none;
         border-bottom: 1px solid #333;
@@ -209,45 +232,57 @@
     }
 
     .btn-large-stacked { width: 150px; height: 60px; font-weight: bold; }
+
+    /* 商品タグのスタイル */
     .product-tag { display: inline-flex; align-items: center; background: #e9ecef; padding: 5px 10px; border-radius: 20px; margin: 2px; border: 1px solid #ced4da; }
     .product-tag .remove-tag-btn { margin-left: 8px; cursor: pointer; color: #888; font-weight: bold; }
     .product-tag .remove-tag-btn:hover { color: #dc3545; }
+
+    /* オートコンプリート候補リストのスタイル */
     #suggestionList .list-group-item { cursor: pointer; }
     #suggestionList .list-group-item:hover { background-color: #f8f9fa; }
 </style>
 
 <script>
+    // サーバーから渡された全商品リスト (オートコンプリート用)
     const dbProductList = <%= jsonAllProductNames %>;
+    // 現在選択されている商品リスト
     let selectedProducts = [];
     const contextPath = "${pageContext.request.contextPath}";
 
-    // 通知メッセージの自動非表示（画面クリック時）
+    // 画面クリック時のイベントリスナー
     document.addEventListener('click', function(event) {
+        // 通知アラートをクリックしたら消す
         const alerts = document.querySelectorAll('.custom-alert');
         if (alerts.length > 0) {
             alerts.forEach(alert => { alert.style.display = 'none'; });
         }
-        // オートコンプリートのリストを隠す
+
+        // 検索ボックス以外をクリックしたら候補リストを閉じる
         if (event.target !== document.getElementById('productSearchInput')) {
             document.getElementById('suggestionList').style.display = 'none';
         }
     });
 
-    // --- フォームバリデーション ---
+    // フォーム送信時のバリデーション
     function validateForm() {
         let isValid = true;
+
+        // ジャンル未選択チェック
         const genreSelect = document.getElementById('editCategory');
         if (genreSelect.value === "") {
             document.getElementById('genreError').style.display = 'block';
             if(isValid) genreSelect.focus();
             isValid = false;
         }
+
+        // 画像未選択チェック (新規登録時のみ必須)
         const imageInput = document.getElementById('recipeImageInput');
         const editId = document.getElementById('editId').value;
         const hasOldImage = (document.getElementById('imagePreviewContainer').style.display !== 'none');
 
-        // 新規登録時、または編集時で既存画像がない場合は必須
         if (imageInput.files.length === 0) {
+            // IDが空(新規) かつ プレビューがない(既存画像なし) 場合
             if (editId === "" || !hasOldImage) {
                 document.getElementById('imageError').style.display = 'block';
                 if(isValid) imageInput.focus();
@@ -256,19 +291,27 @@
         }
         return isValid;
     }
+
+    // エラーメッセージのクリア
     function clearGenreError() { document.getElementById('genreError').style.display = 'none'; }
     function clearImageError() { document.getElementById('imageError').style.display = 'none'; }
 
-    // --- オートコンプリート & 商品検索 ---
+    // --- オートコンプリート & 商品検索機能 ---
+
+    // 入力内容に応じて候補リストを表示
     function handleProductInput(input) {
         const val = input.value.trim().toUpperCase();
         const suggestionList = document.getElementById('suggestionList');
         const errorDiv = document.getElementById('productNotFoundError');
         suggestionList.innerHTML = '';
+
         if (!val) {
             suggestionList.style.display = 'none'; errorDiv.style.display = 'none'; return;
         }
+
+        // DBリストから検索 (かつ、既に選択済みのものは除外)
         const matches = dbProductList.filter(p => p.toUpperCase().indexOf(val) > -1 && !selectedProducts.includes(p));
+
         if (matches.length > 0) {
             matches.forEach(productName => {
                 const li = document.createElement('li');
@@ -286,10 +329,14 @@
             suggestionList.style.display = 'none'; errorDiv.style.display = 'block';
         }
     }
+
+    // 「追加」ボタンまたはEnterキー押下時の処理
     function addProductTag() {
         const input = document.getElementById('productSearchInput');
         const productName = input.value.trim();
         if (productName === "") return;
+
+        // 正確な名前がDBにあるかチェック
         const existsInDB = dbProductList.find(p => p.toUpperCase() === productName.toUpperCase());
         if (existsInDB) {
             addTagToUI(existsInDB);
@@ -302,67 +349,97 @@
         }
         input.focus();
     }
+
+    // 画面にタグを追加し、Hidden inputを作成する
     function addTagToUI(productName) {
         if (selectedProducts.includes(productName)) return;
         selectedProducts.push(productName);
+
         const container = document.getElementById('productTagsContainer');
         const hiddenInputsContainer = document.getElementById('hiddenProductInputs');
-        if (selectedProducts.length === 1) container.innerHTML = "";
+
+        if (selectedProducts.length === 1) container.innerHTML = ""; // プレースホルダーを消す
+
+        // 見た目のタグを作成
         const tagSpan = document.createElement('span');
         tagSpan.className = 'product-tag';
         tagSpan.innerHTML = productName + ` <span class="remove-tag-btn" onclick="removeProductTag(this, '` + productName + `')">&times;</span>`;
         container.appendChild(tagSpan);
+
+        // 送信用の Hidden Input を作成
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
-        hiddenInput.name = 'productNames';
+        hiddenInput.name = 'productNames'; // サーブレットで String[] productNames として受け取る
         hiddenInput.value = productName;
         hiddenInput.setAttribute('data-tag-name', productName);
         hiddenInputsContainer.appendChild(hiddenInput);
     }
+
+    // タグ削除処理
     function removeProductTag(element, productName) {
-        element.parentElement.remove();
-        selectedProducts = selectedProducts.filter(item => item !== productName);
+        element.parentElement.remove(); // タグのHTMLを削除
+        selectedProducts = selectedProducts.filter(item => item !== productName); // 配列から削除
+
+        // Hidden Input も削除
         const hiddenInput = document.querySelector(`input[name='productNames'][value='${productName}']`);
         if(hiddenInput) hiddenInput.remove();
+
         if (selectedProducts.length === 0) {
             document.getElementById('productTagsContainer').innerHTML = '<small class="text-muted fst-italic ms-1">追加された商品はここに表示されます</small>';
         }
     }
 
-    // --- フォームの入力 & リセット ---
+    // --- 編集ボタンクリック時のフォーム設定 ---
     function fillForm(id, name, genre, time, desc, tagsArray, imageName) {
         if(document.getElementById('deleteConfirmContainer').style.display === 'block') return;
-        resetForm();
+        resetForm(); // 一旦クリア
+
+        // 値をセット
         document.getElementById('editId').value = id;
         document.getElementById('editName').value = name;
         document.getElementById('editTime').value = time;
         document.getElementById('editDesc').value = desc;
+
+        // セレクトボックスの選択
         const select = document.getElementById('editCategory');
         for (let i = 0; i < select.options.length; i++) {
             if (select.options[i].value === genre) { select.selectedIndex = i; break; }
         }
+
+        // 商品タグの復元
         if(tagsArray && tagsArray.length > 0) {
             document.getElementById('productTagsContainer').innerHTML = "";
             tagsArray.forEach(prodName => { addTagToUI(prodName); });
         }
+
+        // 画像プレビューの表示
         if (imageName && imageName.trim() !== "") {
             const imgPath = contextPath + "/pic/" + imageName;
             document.getElementById('imagePreview').src = imgPath;
             document.getElementById('imagePreviewContainer').style.display = "block";
         }
     }
+
+    // フォームのリセット
     function resetForm() {
         document.getElementById('RecipeActionForm').reset();
         document.getElementById('editId').value = "";
+
+        // タグ関連のリセット
         selectedProducts = [];
         document.getElementById('productTagsContainer').innerHTML = '<small class="text-muted fst-italic ms-1">追加された商品はここに表示されます</small>';
         document.getElementById('hiddenProductInputs').innerHTML = '';
+
+        // 画像関連のリセット
         document.getElementById('imagePreview').src = "";
         document.getElementById('imagePreviewContainer').style.display = "none";
+
         clearGenreError(); clearImageError();
         document.getElementById('productNotFoundError').style.display = 'none';
         document.getElementById('suggestionList').style.display = 'none';
     }
+
+    // 商品検索欄でEnterキーを押した時の動作 (Submit防止)
     document.getElementById('productSearchInput').addEventListener("keypress", function(e) {
         if (e.key === "Enter") { e.preventDefault(); addProductTag(); }
     });
@@ -372,6 +449,8 @@
         const checkboxes = document.querySelectorAll('.recipe-checkbox:checked');
         document.getElementById('deleteBtnContainer').style.display = checkboxes.length > 0 ? 'block' : 'none';
     }
+
+    // 削除確認画面の表示
     function showDeleteConfirmation() {
         const checkboxes = document.querySelectorAll('.recipe-checkbox:checked');
         const list = document.getElementById('selectedItemsList');
@@ -382,10 +461,12 @@
         document.getElementById('editModeContainer').style.display = 'none';
         document.getElementById('deleteConfirmContainer').style.display = 'block';
     }
+
     function cancelDelete() {
         document.getElementById('editModeContainer').style.display = 'block';
         document.getElementById('deleteConfirmContainer').style.display = 'none';
     }
+
     function confirmBulkDelete() {
         document.getElementById('BulkDeleteForm').submit();
     }

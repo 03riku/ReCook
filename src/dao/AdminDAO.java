@@ -13,11 +13,18 @@ import bean.Genre;
 import bean.Product;
 import bean.Store;
 
+/**
+ * 【管理者用データ操作クラス】
+ * 管理者のログイン、商品の管理、店舗の管理、レシピの管理など、
+ * システム全体のデータを管理・操作するためのメソッドがまとめられています。
+ */
 public class AdminDAO extends DAO {
 
     // ==========================================
-    // PHẦN 1: ADMIN LOGIN
+    // セクション 1: 管理者ログイン
     // ==========================================
+
+    /** 管理者IDとパスワードでログインチェックを行う */
     public Admin findAdmin(int adminId, String adminPass) {
         Admin admin = null;
         String sql = "SELECT * FROM admin WHERE admin_id = ? AND admin_pass = ?";
@@ -37,8 +44,10 @@ public class AdminDAO extends DAO {
     }
 
     // ==========================================
-    // PHẦN 2: PRODUCT MANAGEMENT
+    // セクション 2: 商品管理（材料マスタなど）
     // ==========================================
+
+    /** 登録されている全商品をリストで取得する */
     public List<Product> getAllProducts() throws Exception {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT product_id, product_name, category FROM product ORDER BY product_id DESC";
@@ -48,6 +57,7 @@ public class AdminDAO extends DAO {
         return list;
     }
 
+    /** 名前の一部から商品を検索する */
     public List<Product> searchProducts(String name) throws Exception {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT product_id, product_name, category FROM product WHERE product_name LIKE ? ORDER BY product_id DESC";
@@ -60,6 +70,7 @@ public class AdminDAO extends DAO {
         return list;
     }
 
+    /** 商品名の重複チェック（自分以外のIDで同じ名前があるか） */
     public boolean isProductNameExists(String name, int excludeId) throws Exception {
         String sql = "SELECT COUNT(*) FROM product WHERE product_name = ? AND product_id != ?";
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement(sql)) {
@@ -70,6 +81,7 @@ public class AdminDAO extends DAO {
         return false;
     }
 
+    /** 商品の「新規保存」または「更新」を自動で判別して実行する */
     public void saveOrUpdate(Product p) throws Exception {
         try (Connection con = getConnection()) {
             boolean exists = false;
@@ -80,10 +92,12 @@ public class AdminDAO extends DAO {
                 }
             }
             if (exists) {
+                // すでにあれば情報を新しく書き換える
                 try (PreparedStatement pst = con.prepareStatement("UPDATE product SET product_name = ?, category = ? WHERE product_id = ?")) {
                     pst.setString(1, p.getProductName()); pst.setString(2, p.getCategory()); pst.setInt(3, p.getProductId()); pst.executeUpdate();
                 }
             } else {
+                // なければ新しく登録する
                 try (PreparedStatement pst = con.prepareStatement("INSERT INTO product (product_name, category) VALUES (?, ?)")) {
                     pst.setString(1, p.getProductName()); pst.setString(2, p.getCategory()); pst.executeUpdate();
                 }
@@ -91,6 +105,7 @@ public class AdminDAO extends DAO {
         }
     }
 
+    /** 複数の商品をまとめて一括削除する */
     public void bulkDelete(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) return;
         StringBuilder sql = new StringBuilder("DELETE FROM product WHERE product_id IN (");
@@ -102,6 +117,7 @@ public class AdminDAO extends DAO {
         }
     }
 
+    /** 登録されている全カテゴリー名を重複なしで取得する */
     public List<String> getAllCategories() throws Exception {
         List<String> list = new ArrayList<>();
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("SELECT DISTINCT category FROM product WHERE category IS NOT NULL AND category != '' ORDER BY category"); ResultSet rs = st.executeQuery()) {
@@ -111,8 +127,10 @@ public class AdminDAO extends DAO {
     }
 
     // ==========================================
-    // PHẦN 3: STORE MANAGEMENT
+    // セクション 3: 店舗管理
     // ==========================================
+
+    /** 全店舗のリストを取得する */
     public List<Store> selectAll() throws Exception {
         List<Store> list = new ArrayList<>();
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("SELECT * FROM store ORDER BY store_id ASC"); ResultSet rs = st.executeQuery()) {
@@ -121,6 +139,7 @@ public class AdminDAO extends DAO {
         return list;
     }
 
+    /** 指定したIDの店舗情報を1件取得する */
     public Store selectById(long id) throws Exception {
         Store store = null;
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("SELECT * FROM store WHERE store_id = ?")) {
@@ -132,6 +151,7 @@ public class AdminDAO extends DAO {
         return store;
     }
 
+    /** 店舗IDがすでに使われているかチェックする */
     public boolean isIdExists(long id) throws Exception {
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("SELECT COUNT(*) FROM store WHERE store_id = ?")) {
             st.setLong(1, id);
@@ -139,6 +159,7 @@ public class AdminDAO extends DAO {
         }
     }
 
+    /** 新しい店舗を登録する */
     public int insert(Store s) throws Exception {
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("INSERT INTO store VALUES (?, ?, ?, ?)")) {
             st.setLong(1, s.getStoreId()); st.setString(2, s.getStoreName()); st.setString(3, s.getStorePassword()); st.setString(4, s.getStoreAddress());
@@ -146,6 +167,7 @@ public class AdminDAO extends DAO {
         }
     }
 
+    /** 店舗情報を更新する（IDが変更された場合にも対応） */
     public int update(Store s, long oldId) throws Exception {
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("UPDATE store SET store_id=?, store_name=?, store_password=?, store_address=? WHERE store_id=?")) {
             st.setLong(1, s.getStoreId()); st.setString(2, s.getStoreName()); st.setString(3, s.getStorePassword()); st.setString(4, s.getStoreAddress()); st.setLong(5, oldId);
@@ -153,6 +175,7 @@ public class AdminDAO extends DAO {
         }
     }
 
+    /** 店舗を削除する */
     public int delete(long id) throws Exception {
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("DELETE FROM store WHERE store_id=?")) {
             st.setLong(1, id);
@@ -161,9 +184,10 @@ public class AdminDAO extends DAO {
     }
 
     // ==========================================
-    // PHẦN 4: RECIPE MANAGEMENT (Đã cập nhật Image)
+    // セクション 4: レシピ（料理メニュー）管理
     // ==========================================
 
+    /** レシピに設定できる全ジャンルのリストを取得する */
     public List<Genre> getAllGenresForRecipe() throws Exception {
         List<Genre> list = new ArrayList<>();
         try (Connection con = getConnection(); PreparedStatement st = con.prepareStatement("SELECT * FROM genre ORDER BY genre_id"); ResultSet rs = st.executeQuery()) {
@@ -177,11 +201,10 @@ public class AdminDAO extends DAO {
         return list;
     }
 
-    // Cập nhật lấy cột 'image'
+    /** 画像やジャンル名も含めた全レシピの情報を取得する（検索機能付き） */
     public List<CookMenu> getAllRecipesFull(String searchKeyword) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
-        // Lấy tất cả cột từ cook_menu bao gồm 'image'
         sql.append("SELECT c.*, g.genre_name FROM cook_menu c ");
         sql.append("LEFT JOIN genre g ON c.genre_id = g.genre_id ");
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
@@ -202,16 +225,10 @@ public class AdminDAO extends DAO {
                     m.setDescription(rs.getString("description"));
                     m.setGenreId(rs.getInt("genre_id"));
                     m.setGenreName(rs.getString("genre_name"));
+                    // 画像ファイル名を取得
+                    try { m.setImage(rs.getString("image")); } catch (Exception e) { m.setImage(""); }
 
-                    // --- LẤY TÊN FILE ẢNH TỪ DB ---
-                    // Cần đảm bảo bảng cook_menu đã có cột image
-                    try {
-                        m.setImage(rs.getString("image"));
-                    } catch (java.sql.SQLException e) {
-                        // Nếu chưa có cột image thì bỏ qua (tránh lỗi 500)
-                        m.setImage("");
-                    }
-
+                    // このレシピに紐づく材料（Product）も取得してセット
                     m.setProductList(getProductsByMenuId(con, m.getMenuItemId()));
                     list.add(m);
                 }
@@ -220,6 +237,7 @@ public class AdminDAO extends DAO {
         return list;
     }
 
+    /** 特定のレシピで使われている材料のリストを取得する（内部用） */
     private List<Product> getProductsByMenuId(Connection con, int menuId) throws Exception {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT p.product_id, p.product_name FROM product p " +
@@ -239,75 +257,65 @@ public class AdminDAO extends DAO {
         return products;
     }
 
-    // Cập nhật Transaction: Lưu/Sửa cột 'image'
+    /**
+     * レシピの保存・更新処理（トランザクション）
+     * レシピ本体、ジャンル、使用する材料との紐付けを「まとめて」保存します。
+     */
     public void saveRecipeTransaction(CookMenu menu, String genreName, List<String> productNames) throws Exception {
         Connection con = null;
         try {
             con = getConnection();
-            con.setAutoCommit(false);
+            con.setAutoCommit(false); // まとめて更新するため、自動確定をOFFにする
 
-            // A. Lấy Genre ID từ tên
+            // 1. ジャンル名からジャンルIDを探す
             int genreId = 0;
             try (PreparedStatement st = con.prepareStatement("SELECT genre_id FROM genre WHERE genre_name = ?")) {
                 st.setString(1, genreName);
-                try (ResultSet rs = st.executeQuery()) {
-                    if (rs.next()) genreId = rs.getInt("genre_id");
-                }
+                try (ResultSet rs = st.executeQuery()) { if (rs.next()) genreId = rs.getInt("genre_id"); }
             }
             if (genreId != 0) menu.setGenreId(genreId);
 
-            // B. Insert/Update CookMenu
+            // 2. レシピ情報の追加または更新
             int menuId = menu.getMenuItemId();
             if (menuId > 0) {
-                // === UPDATE ===
-                // Logic: Nếu menu.getImage() có dữ liệu -> Update cả ảnh.
-                //        Nếu menu.getImage() là NULL (không chọn ảnh mới) -> Giữ nguyên ảnh cũ (không update cột image).
-
+                // 更新（画像が選ばれていれば画像も更新）
                 String sql;
                 boolean updateImage = (menu.getImage() != null && !menu.getImage().isEmpty());
-
                 if (updateImage) {
                     sql = "UPDATE cook_menu SET dish_name=?, cook_time=?, description=?, genre_id=?, image=? WHERE menu_item_id=?";
                 } else {
                     sql = "UPDATE cook_menu SET dish_name=?, cook_time=?, description=?, genre_id=? WHERE menu_item_id=?";
                 }
-
                 try (PreparedStatement st = con.prepareStatement(sql)) {
                     st.setString(1, menu.getDishName());
                     st.setInt(2, menu.getCookTime());
                     st.setString(3, menu.getDescription());
                     st.setInt(4, menu.getGenreId());
-
                     if (updateImage) {
-                        st.setString(5, menu.getImage());
-                        st.setInt(6, menuId);
+                        st.setString(5, menu.getImage()); st.setInt(6, menuId);
                     } else {
                         st.setInt(5, menuId);
                     }
                     st.executeUpdate();
                 }
             } else {
-                // === INSERT ===
-                // Luôn insert cột image (có thể null nếu không chọn)
+                // 新規登録
                 String sql = "INSERT INTO cook_menu (dish_name, cook_time, description, genre_id, image) VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement st = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     st.setString(1, menu.getDishName());
                     st.setInt(2, menu.getCookTime());
                     st.setString(3, menu.getDescription());
                     st.setInt(4, menu.getGenreId());
-                    st.setString(5, menu.getImage()); // Lưu tên file ảnh
+                    st.setString(5, menu.getImage());
                     st.executeUpdate();
-                    try (ResultSet rs = st.getGeneratedKeys()) {
-                        if (rs.next()) menuId = rs.getInt(1);
-                    }
+                    try (ResultSet rs = st.getGeneratedKeys()) { if (rs.next()) menuId = rs.getInt(1); }
                 }
             }
 
-            // C. Xử lý Tags (Product Links) - Giữ nguyên logic cũ
+            // 3. レシピと材料の紐付け（一度消してから作り直す）
             if (menu.getMenuItemId() > 0) {
                 try (PreparedStatement st = con.prepareStatement("DELETE FROM product_cook_menu WHERE menu_item_id = ?")) {
-                    st.setInt(1, menuId);
-                    st.executeUpdate();
+                    st.setInt(1, menuId); st.executeUpdate();
                 }
             }
             if (productNames != null && !productNames.isEmpty()) {
@@ -315,43 +323,41 @@ public class AdminDAO extends DAO {
                 String insertRel = "INSERT INTO product_cook_menu (menu_item_id, product_id) VALUES (?, ?)";
                 try (PreparedStatement fSt = con.prepareStatement(findSql);
                      PreparedStatement iSt = con.prepareStatement(insertRel)) {
-
                     for (String pName : productNames) {
                         if (pName == null || pName.trim().isEmpty()) continue;
                         fSt.setString(1, pName.trim());
                         int prodId = -1;
-                        try (ResultSet rs = fSt.executeQuery()) {
-                            if (rs.next()) prodId = rs.getInt("product_id");
-                        }
+                        try (ResultSet rs = fSt.executeQuery()) { if (rs.next()) prodId = rs.getInt("product_id"); }
                         if (prodId != -1) {
-                            iSt.setInt(1, menuId);
-                            iSt.setInt(2, prodId);
-                            iSt.executeUpdate();
+                            iSt.setInt(1, menuId); iSt.setInt(2, prodId); iSt.executeUpdate();
                         }
                     }
                 }
             }
-            con.commit();
+            con.commit(); // すべて成功したら確定
         } catch (Exception e) {
-            if (con != null) con.rollback();
+            if (con != null) con.rollback(); // 一つでも失敗したら元に戻す
             throw e;
         } finally {
             if (con != null) { con.setAutoCommit(true); con.close(); }
         }
     }
 
+    /**
+     * レシピを削除する
+     * 関連するお気に入り設定や店舗メニュー設定なども安全に消去します。
+     */
     public void deleteRecipes(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) return;
         Connection con = null;
         try {
             con = getConnection();
             con.setAutoCommit(false);
-
             StringBuilder idStr = new StringBuilder();
             for(int i=0; i<ids.length; i++) idStr.append(i==0 ? "?" : ",?");
             String params = "(" + idStr.toString() + ")";
 
-            // Xóa khóa ngoại
+            // 子テーブル（関連データ）から先に消す
             String[] tables = {"product_cook_menu", "store_menu", "favorite_menu"};
             for(String tb : tables) {
                 try(PreparedStatement st = con.prepareStatement("DELETE FROM " + tb + " WHERE menu_item_id IN " + params)) {
@@ -359,12 +365,12 @@ public class AdminDAO extends DAO {
                     st.executeUpdate();
                 }
             }
-            // Set null coupon
+            // クーポンとの紐付けを解除
             try(PreparedStatement st = con.prepareStatement("UPDATE coupon SET menu_item_id = NULL WHERE menu_item_id IN " + params)) {
                  for(int i=0; i<ids.length; i++) st.setInt(i+1, Integer.parseInt(ids[i]));
                  st.executeUpdate();
             }
-            // Xóa chính
+            // 親テーブル（レシピ本体）を最後に消す
             try(PreparedStatement st = con.prepareStatement("DELETE FROM cook_menu WHERE menu_item_id IN " + params)) {
                  for(int i=0; i<ids.length; i++) st.setInt(i+1, Integer.parseInt(ids[i]));
                  st.executeUpdate();
