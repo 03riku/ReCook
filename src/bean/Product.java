@@ -8,7 +8,7 @@ public class Product implements Serializable {
     private int productId;
     private String productName;
     private String category;
-
+    private int price;
     public Product() {
     }
 
@@ -41,4 +41,6 @@ public class Product implements Serializable {
     public void setCategory(String category) {
         this.category = category;
     }
+    public int getPrice() { return price; }
+    public void setPrice(int price) { this.price = price; }
 }

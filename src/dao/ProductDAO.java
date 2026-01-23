@@ -189,4 +189,31 @@ public class ProductDAO extends DAO {
         }
         return list;
     }
+    /**
+     * 料理IDに紐づく必要な具材（商品マスタ）を取得する
+     */
+    public List<Product> getIngredientsWithPrice(int menuId, int storeId) throws Exception {
+        List<Product> list = new ArrayList<>();
+        // 料理に必要な具材(product)と、その店の価格(store_product)をJOINして取得
+        String sql = "SELECT p.product_name, sp.price " +
+                     "FROM product p " +
+                     "JOIN product_cook_menu pcm ON p.product_id = pcm.product_id " +
+                     "JOIN store_product sp ON p.product_id = sp.product_id " +
+                     "WHERE pcm.menu_item_id = ? AND sp.store_id = ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, menuId);
+            ps.setInt(2, storeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Product p = new Product();
+                    p.setProductName(rs.getString("product_name"));
+                    p.setPrice(rs.getInt("price")); // 店の価格をセット
+                    list.add(p);
+                }
+            }
+        }
+        return list;
+    }
 }

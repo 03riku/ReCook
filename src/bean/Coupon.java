@@ -6,6 +6,8 @@ public class Coupon implements Serializable {
     private int discountRate;
     private int storeId;
     private int menuItemId;
+    private String startTime;
+    private String endTime;
     // 表示用
     private String dishName;
 
@@ -19,4 +21,8 @@ public class Coupon implements Serializable {
     public void setMenuItemId(int menuItemId) { this.menuItemId = menuItemId; }
     public String getDishName() { return dishName; }
     public void setDishName(String dishName) { this.dishName = dishName; }
+    public String getStartTime() { return startTime; }
+    public void setStartTime(String startTime) { this.startTime = startTime; }
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
 }
