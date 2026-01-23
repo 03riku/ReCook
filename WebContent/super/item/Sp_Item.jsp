@@ -54,28 +54,20 @@ body { background-color: #F5F5F0; }
 <!-- 左サイドメニュー -->
 <div class="sidebar">
     <div class="logo">
-        <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Re.Cook Logo" style="width: 200px;">
+        <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Logo" style="width: 200px;">
     </div>
 
-    <!-- 修正1: 「商品」をサーブレットへのリンクにする -->
-    <a href="<%= request.getContextPath() %>/super/storeProductPage"
-       class="btn ${requestURI.contains('storeProductPage') ? 'btn-dark' : 'btn-outline-dark'} menu-btn">
-       商品
-    </a>
+    <!-- 商品ページへ -->
+    <a href="<%= request.getContextPath() %>/super/storeProductPage" class="btn btn-outline-dark menu-btn">商品</a>
 
-    <!-- 修正2: 「値引き商品」のリンク（既に設定されていればOKですが、念のため確認） -->
-    <a href="<%= request.getContextPath() %>/super/discountPage"
-       class="btn ${requestURI.contains('discountPage') ? 'btn-dark' : 'btn-outline-dark'} menu-btn">
-       値引き商品
-    </a>
+    <!-- 値引き商品ページへ -->
+    <a href="<%= request.getContextPath() %>/super/discountPage" class="btn btn-outline-dark menu-btn">値引き商品</a>
 
-    <button class="btn btn-outline-dark menu-btn">クーポン</button>
+    <!-- クーポンページへ（サーブレットのパスを指定） -->
+    <a href="<%= request.getContextPath() %>/super/couponPage" class="btn btn-outline-dark menu-btn">クーポン</a>
 
-    <!-- ログアウト確認画面へのリンク -->
-    <a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp"
-       class="btn btn-outline-dark menu-btn">
-       ログアウト
-    </a>
+    <!-- ログアウト確認へ -->
+    <a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp" class="btn btn-outline-dark menu-btn">ログアウト</a>
 </div>
 
 <div class="container-fluid">
