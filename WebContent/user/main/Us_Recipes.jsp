@@ -31,7 +31,7 @@
         .recipe-item:hover { background-color: #f8f9fa; }
         .recipe-link { text-decoration: none; color: #333; display: block; }
 
-        /* ★ 画像表示エリア（写真が枠にきれいに収まるように設定） */
+        /* 画像表示エリア */
         .recipe-img-box {
             width: 100%;
             height: 100px;
@@ -66,6 +66,7 @@
         }
         .bottom-nav a:hover::after { transform: translateX(-50%) scaleX(1); }
         .bottom-nav a.active::after { transform: translateX(-50%) scaleX(1) !important; }
+
         .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
@@ -81,10 +82,11 @@
     <div class="container py-2" style="max-width: 500px;">
         <div class="px-2">
             <c:forEach var="item" items="${menuList}">
+                <%-- ★ ここで新しいサーブレットのURL (/user/MenuDetail) を呼び出します --%>
                 <a href="${pageContext.request.contextPath}/user/MenuDetail?id=${item.menuItemId}&fromStore=${fromStore}" class="recipe-link">
                     <div class="row g-0 recipe-item shadow-sm">
 
-                        <%-- ★ 画像部分：データベースのファイル名を読み込んで表示 --%>
+                        <%-- 画像部分 --%>
                         <div class="col-4 px-2">
                             <div class="recipe-img-box border">
                                 <c:choose>
