@@ -53,14 +53,22 @@ body { background-color: #F5F5F0; }
 
 <body>
 
-<!-- 左サイドメニュー -->
+<!-- 各JSPのサイドバー部分 -->
 <div class="sidebar">
     <div class="logo">
-        <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Re.Cook Logo" style="width: 200px;">
+        <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Logo" style="width: 200px;">
     </div>
+
+    <!-- 商品ページへ -->
     <a href="<%= request.getContextPath() %>/super/storeProductPage" class="btn btn-outline-dark menu-btn">商品</a>
-    <a href="<%= request.getContextPath() %>/super/discountPage" class="btn btn-dark menu-btn">値引き商品</a>
-    <button class="btn btn-outline-dark menu-btn">クーポン</button>
+
+    <!-- 値引き商品ページへ -->
+    <a href="<%= request.getContextPath() %>/super/discountPage" class="btn btn-outline-dark menu-btn">値引き商品</a>
+
+    <!-- クーポンページへ（サーブレットのパスを指定） -->
+    <a href="<%= request.getContextPath() %>/super/couponPage" class="btn btn-outline-dark menu-btn">クーポン</a>
+
+    <!-- ログアウト確認へ -->
     <a href="<%= request.getContextPath() %>/super/account/Sp_LogoutConfirm.jsp" class="btn btn-outline-dark menu-btn">ログアウト</a>
 </div>
 
@@ -80,7 +88,7 @@ body { background-color: #F5F5F0; }
 
         <div class="row flex-grow-1" style="min-height: 0;">
 
-            <!-- 左：自店舗商品一覧（ここから選んで追加） -->
+            <!-- 左：自店舗商品一覧 -->
             <div class="col-md-5 d-flex flex-column">
                 <form action="<%= request.getContextPath() %>/super/addDiscount" method="post" class="d-flex flex-column h-100">
                     <div class="table-header-area">
@@ -116,11 +124,11 @@ body { background-color: #F5F5F0; }
                 </form>
             </div>
 
-            <!-- 右：値引き中商品一覧（個別に更新・削除） -->
+            <!-- 右：値引き中商品一覧 -->
             <div class="col-md-7 d-flex flex-column">
                 <div class="table-header-area">
                     <h5 class="mb-0">値引き中商品一覧</h5>
-                    <div></div> <!-- ヘッダーの高さを揃えるためのダミー -->
+                    <div></div>
                 </div>
                 <div class="table-scroll-container">
                     <table class="table table-bordered table-hover mb-0 align-middle">
@@ -135,7 +143,6 @@ body { background-color: #F5F5F0; }
                         <tbody>
                             <c:forEach var="dp" items="${discountList}">
                                 <tr>
-                                    <!-- 1行ごとにフォームを配置して個別に更新・解除できるようにする -->
                                     <form action="<%= request.getContextPath() %>/super/discountAction" method="post" style="display: contents;">
                                         <input type="hidden" name="discountedProductId" value="${dp.discountedProductId}">
                                         <td>
@@ -153,7 +160,6 @@ body { background-color: #F5F5F0; }
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <!-- 「更新」と「解除」の個別ボタン -->
                                                 <button type="submit" name="action" value="update" class="btn btn-sm btn-success">更新</button>
                                                 <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger"
                                                         onclick="return confirm('値引きを解除しますか？')">解除</button>
