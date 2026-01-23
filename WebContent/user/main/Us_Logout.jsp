@@ -66,7 +66,7 @@
             transform: translateX(-50%) scaleX(1);
         }
 
-        /* 今いるページは常に表示（使うならactive付ける） */
+        /* 今いるページは常に表示（アカウント画面のグループなので active を付与） */
         .bottom-nav a.active::after{
             transform: translateX(-50%) scaleX(1) !important;
         }
@@ -87,17 +87,15 @@
 			<h3 class="mb-5 fw-bold">ログアウトしますか？</h3>
 
 			<div class="row justify-content-center g-3">
-				<%-- Yesボタン --%>
+				<%-- Yesボタン：実際にログアウト処理を行うサーブレットを呼び出します --%>
 				<div class="col-5">
-					<%-- ★リンク修正：直接ログイン画面へ戻るように変更 --%>
-					<a href="${pageContext.request.contextPath}/user/main/Us_Login.jsp" class="confirm-btn">
+					<a href="${pageContext.request.contextPath}/User_LogoutServlet" class="confirm-btn">
 						Yes
 					</a>
 				</div>
 
-				<%-- Noボタン --%>
+				<%-- Noボタン：ログアウトせずにアカウント画面に戻ります --%>
 				<div class="col-5">
-					<%-- アカウント画面に戻る --%>
 					<a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp" class="confirm-btn">
 						No
 					</a>
@@ -109,27 +107,26 @@
 
 	<%-- 下部固定ナビゲーション --%>
 	<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
-  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
-     class="text-dark text-decoration-none text-center bar-home"
-     style="min-width: 60px;">ホーム</a>
+      <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
+         class="text-dark text-decoration-none text-center bar-home"
+         style="min-width: 60px;">ホーム</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
-     class="text-dark text-decoration-none text-center bar-search"
-     style="min-width: 60px;">検索</a>
+      <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
+         class="text-dark text-decoration-none text-center bar-search"
+         style="min-width: 60px;">検索</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-     class="text-dark text-decoration-none text-center bar-recipe"
-     style="min-width: 60px;">料理提案</a>
+      <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
+         class="text-dark text-decoration-none text-center bar-recipe"
+         style="min-width: 60px;">料理提案</a>
 
-  <a href="${pageContext.request.contextPath}/user/StoreList"
-     class="text-dark text-decoration-none text-center bar-store"
-     style="min-width: 60px;">店舗</a>
+      <a href="${pageContext.request.contextPath}/user/StoreList"
+         class="text-dark text-decoration-none text-center bar-store"
+         style="min-width: 60px;">店舗</a>
 
-  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-   class="text-dark text-decoration-none text-center bar-account active"
-   style="min-width: 60px;">アカウント</a>
-
-</nav>
+      <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
+         class="text-dark text-decoration-none text-center bar-account active"
+         style="min-width: 60px;">アカウント</a>
+    </nav>
 
 </c:set>
 

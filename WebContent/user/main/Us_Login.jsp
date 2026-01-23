@@ -63,8 +63,8 @@
 			</div>
 		</c:if>
 
-		<%-- ■ログインフォーム --%>
-		<form action="${pageContext.request.contextPath}/LoginServlet" method="post">
+		<%-- ■ログインフォーム：action先を新しいサーブレット名に修正 --%>
+		<form action="${pageContext.request.contextPath}/User_LoginServlet" method="post">
 
 			<div class="row g-4">
 				<%-- メールアドレス --%>

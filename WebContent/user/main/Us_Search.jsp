@@ -5,19 +5,19 @@
 
 <c:set var="pageBody" scope="request">
   <style>
-    /* ★横スクロールバー対策（最重要） */
+    /* 横スクロールバー対策 */
     html, body {
       overflow-x: hidden !important;
     }
 
-    /* ★ページ背景 */
+    /* ページ背景 */
     body {
       background: rgb(238, 237, 234) !important;
     }
 
     .page-header { background-color: #c9daf8 !important; }
 
-    /* ★ロゴ枠 */
+    /* ロゴ枠 */
     .logo-box{
       border: 2px solid #000;
       background: #fff;
@@ -30,6 +30,7 @@
       width: auto;
     }
 
+    /* 検索バーのデザイン */
     .search-input-group {
       border: 2px solid #28a745;
       border-radius: 10px;
@@ -50,9 +51,7 @@
       font-size: 1.3rem;
     }
 
-    /* =========================
-       ★下部固定ナビ：ホバーで下に色バー（色分け対応）
-       ========================= */
+    /* 下部固定ナビのデザイン */
     .bottom-nav a{
       position: relative;
       padding-bottom: 10px;
@@ -84,9 +83,9 @@
     .bottom-nav a.bar-account { --bar-color:#ead1dc; }
   </style>
 
-  <%-- ★ここを container で包む（rowのはみ出し防止） --%>
   <div class="container py-4" style="max-width: 500px;">
 
+    <%-- ロゴセクション --%>
     <div class="text-center mb-4">
       <div class="logo-box">
         <img src="${pageContext.request.contextPath}/pic/recook_logo.png"
@@ -94,18 +93,21 @@
       </div>
     </div>
 
+    <%-- 検索フォームセクション --%>
     <div class="row justify-content-center px-3 mx-0">
       <div class="col-12 px-0">
+        <%-- ★ actionの中身をサーブレットのURLパターン(/user/Search)に合わせる --%>
         <form action="${pageContext.request.contextPath}/user/Search" method="get">
           <div class="input-group search-input-group shadow-sm">
             <button class="search-btn" type="submit"><i class="fas fa-search"></i></button>
+            <%-- name属性はサーブレットのgetParameterと一致させる --%>
             <input type="text" name="keyword" class="form-control search-input" placeholder="料理名や食材を入力">
           </div>
         </form>
       </div>
     </div>
 
-    <div style="height: 90px;"></div> <%-- 下ナビ分の余白 --%>
+    <div style="height: 90px;"></div>
   </div>
 
   <%-- 下部固定ナビゲーション --%>

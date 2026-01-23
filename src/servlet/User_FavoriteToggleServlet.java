@@ -12,8 +12,13 @@ import javax.servlet.http.HttpSession;
 import bean.GeneralUser;
 import dao.UserDAO;
 
+/**
+ * お気に入りの登録・解除（トグル処理）を担当するサーブレット
+ */
 @WebServlet("/user/User_FavoriteToggle")
 public class User_FavoriteToggleServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -22,25 +27,28 @@ public class User_FavoriteToggleServlet extends HttpServlet {
         GeneralUser user = (GeneralUser) session.getAttribute("loginUser");
 
         if (user == null) {
-            // ログインしていない場合はログイン画面へ（安全策）
+            // ログインしていない場合はログイン画面へ
             response.sendRedirect(request.getContextPath() + "/user/main/Us_Login.jsp");
             return;
         }
 
+        // 料理IDを取得
         String idStr = request.getParameter("id");
         try {
             if (idStr != null) {
                 int menuItemId = Integer.parseInt(idStr);
                 UserDAO dao = new UserDAO();
 
-                // ログインユーザーのIDを使ってお気に入りを切り替える
+                // データベース側でお気に入りの有無を反転（トグル）させる
                 dao.toggleFavorite(user.getUserId(), menuItemId);
 
-                // 詳細画面へ戻る（表示を更新するため）
+                // ★ 詳細画面へリダイレクトして戻る
+                // User_MenuDetailServlet の設定URL (@WebServlet("/user/MenuDetail")) に合わせます
                 response.sendRedirect("MenuDetail?id=" + menuItemId);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            // エラー時はトップへ
             response.sendRedirect("main/Us_Top.jsp");
         }
     }

@@ -36,16 +36,15 @@
 			<p class="text-muted small">必要な情報を入力してください</p>
 		</div>
 
-		<%-- エラーメッセージ --%>
+		<%-- エラーメッセージ表示 --%>
 		<c:if test="${not empty param.error}">
 			<div class="alert alert-danger text-center p-2 mb-4" role="alert">
 				登録に失敗しました。<br>入力内容を確認してください。
 			</div>
 		</c:if>
 
-		<%-- ■ 新規登録フォーム --%>
-		<%-- 入力されたデータを SignupServlet へ送信します --%>
-		<form action="${pageContext.request.contextPath}/SignupServlet" method="post">
+		<%-- ■ 新規登録フォーム：action先を User_SignupServlet に修正 --%>
+		<form action="${pageContext.request.contextPath}/User_SignupServlet" method="post">
 
 			<div class="row g-4">
 				<%-- メールアドレス --%>
