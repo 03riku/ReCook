@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 
@@ -9,8 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import dao.CouponDAO;
-import dao.StoreMenuDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/addCoupon")
 public class CouponRegisterServlet extends HttpServlet {
@@ -27,9 +26,7 @@ public class CouponRegisterServlet extends HttpServlet {
             // 1. セッションチェック
             HttpSession session = request.getSession();
 
-            // ★注意: ログイン時に Integer で保存している場合はこのままでOK。
-            // もし Long で保存しているなら (Long) にキャストしてください。
-            Integer storeIdInt = (Integer) session.getAttribute("store_id");
+            Long storeIdInt = (Long) session.getAttribute("store_id");
 
             if (storeIdInt == null) {
                 response.sendRedirect(request.getContextPath() + "/super/account/Sp_Login.jsp");
@@ -61,14 +58,17 @@ public class CouponRegisterServlet extends HttpServlet {
             String startTime = startStr.replace("T", " ") + ":00";
             String endTime = endStr.replace("T", " ") + ":00";
 
-            // 4. クーポン登録処理 (CouponDAO利用)
-            CouponDAO couponDao = new CouponDAO();
-            // ★修正したDAOにより、long型のstoreIdをそのまま渡せます
-            int newCouponId = couponDao.insert(discountRate, storeId, menuItemId, startTime, endTime);
+            // ★ 修正箇所: StoreDao をインスタンス化
+            StoreDao storeDao = new StoreDao();
 
-            // 5. メニュー価格更新処理 (StoreMenuDAO利用)
-            StoreMenuDAO menuDao = new StoreMenuDAO();
-            menuDao.registerStoreMenu(storeId, menuItemId, newCouponId, discountRate);
+            // 4. クーポン登録処理
+            // 旧: couponDao.insert(...) -> 新: storeDao.insertCoupon(...)
+            int newCouponId = storeDao.insertCoupon(discountRate, storeId, menuItemId, startTime, endTime);
+
+            // 5. メニュー価格更新処理
+            // 旧: menuDao.registerStoreMenu(...) -> 新: storeDao.registerStoreMenu(...)
+            // (registerStoreMenu は StoreDao にそのままの名前で統合しました)
+            storeDao.registerStoreMenu(storeId, menuItemId, newCouponId, discountRate);
 
             // 6. 完了処理
             session.setAttribute("successMsg", "クーポンを登録し、メニュー価格を更新しました。");

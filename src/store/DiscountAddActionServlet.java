@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import dao.DiscountedProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/addDiscount")
 public class DiscountAddActionServlet extends HttpServlet {
@@ -19,17 +19,21 @@ public class DiscountAddActionServlet extends HttpServlet {
 
         try {
             HttpSession session = req.getSession();
-            Integer storeId = (Integer) session.getAttribute("store_id");
+            Long storeId = (Long) session.getAttribute("store_id");
             String[] productIds = req.getParameterValues("productIds");
-            int defaultRate = Integer.parseInt(req.getParameter("defaultRate"));
+
+            String defaultRateStr = req.getParameter("defaultRate");
+            int defaultRate = (defaultRateStr != null && !defaultRateStr.isEmpty()) ? Integer.parseInt(defaultRateStr) : 0;
 
             if (productIds != null && storeId != null) {
-                DiscountedProductDAO dao = new DiscountedProductDAO();
+                StoreDao storeDao = new StoreDao();
+
                 boolean duplicate = false;
                 for (String pid : productIds) {
                     int productId = Integer.parseInt(pid);
-                    if (!dao.isExists(productId, storeId)) {
-                        dao.insert(productId, storeId, defaultRate);
+
+                    if (!storeDao.isDiscountedProductExists(productId, storeId)) {
+                        storeDao.insertDiscountedProduct(productId, storeId, defaultRate);
                     } else {
                         duplicate = true;
                     }

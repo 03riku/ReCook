@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import dao.DiscountedProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/discountAction")
 public class DiscountActionServlet extends HttpServlet {
@@ -19,15 +19,24 @@ public class DiscountActionServlet extends HttpServlet {
         try {
             req.setCharacterEncoding("UTF-8");
             String action = req.getParameter("action");
-            int dpId = Integer.parseInt(req.getParameter("discountedProductId"));
 
-            DiscountedProductDAO dao = new DiscountedProductDAO();
+            String dpIdStr = req.getParameter("discountedProductId");
+            if (dpIdStr == null || dpIdStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/super/discountPage");
+                return;
+            }
+            int dpId = Integer.parseInt(dpIdStr);
+
+            StoreDao storeDao = new StoreDao();
 
             if ("update".equals(action)) {
-                int rate = Integer.parseInt(req.getParameter("rate"));
-                dao.updateRate(dpId, rate);
+                String rateStr = req.getParameter("rate");
+                if (rateStr != null && !rateStr.isEmpty()) {
+                    int rate = Integer.parseInt(rateStr);
+                    storeDao.updateDiscountRate(dpId, rate);
+                }
             } else if ("delete".equals(action)) {
-                dao.delete(dpId);
+                storeDao.deleteDiscountedProduct(dpId);
             }
 
             resp.sendRedirect(req.getContextPath() + "/super/discountPage");

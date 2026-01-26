@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,8 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import bean.CookMenu;
 import bean.StoreProduct;
-import dao.CookMenuDAO;
-import dao.StoreProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/couponPage")
 public class CouponPageServlet extends HttpServlet {
@@ -21,21 +20,26 @@ public class CouponPageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             HttpSession session = req.getSession();
-            Integer storeId = (Integer) session.getAttribute("store_id");
-            if (storeId == null) { resp.sendRedirect(req.getContextPath() + "/super/account/Sp_Login.jsp"); return; }
+            Long storeId = (Long) session.getAttribute("store_id");
 
-            StoreProductDAO spDAO = new StoreProductDAO();
-            CookMenuDAO cmDAO = new CookMenuDAO();
+            if (storeId == null) {
+                resp.sendRedirect(req.getContextPath() + "/super/account/Sp_Login.jsp");
+                return;
+            }
 
-            // 左側用：自店舗の商品
-            List<StoreProduct> ingredients = spDAO.findByStoreId(storeId);
-            // 右側用：料理の選択肢
-            List<CookMenu> menus = cmDAO.selectAll();
+            StoreDao storeDao = new StoreDao();
+
+            List<StoreProduct> ingredients = storeDao.findStoreProductsByStoreId(storeId);
+
+            List<CookMenu> menus = storeDao.selectAllCookMenus();
 
             req.setAttribute("ingredients", ingredients);
             req.setAttribute("menus", menus);
 
             req.getRequestDispatcher("/super/coupon/Sp_Coupon.jsp").forward(req, resp);
-        } catch (Exception e) { throw new ServletException(e); }
+
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
     }
 }

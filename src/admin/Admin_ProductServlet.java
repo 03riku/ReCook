@@ -152,7 +152,18 @@ public class Admin_ProductServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "エラーが発生しました: " + e.getMessage());
+            String errorMsg = e.getMessage();
+
+            // 【修正箇所】: エラーメッセージの内容をチェックして、日本語に変換する
+            // FK_STORE_PRODUCT_PRODUCT というエラーコードが含まれていたら、指定のメッセージを表示
+            if (errorMsg != null && (errorMsg.contains("FK_STORE_PRODUCT_PRODUCT") || errorMsg.contains("store_product"))) {
+                request.setAttribute("error", "この商品は既にスーパーが使っています。");
+            } else {
+                // その他のエラーの場合
+                request.setAttribute("error", "エラーが発生しました: " + errorMsg);
+            }
+
+            // エラー時はフォワードして画面を表示（リダイレクトしない）
             doGet(request, response);
         }
     }

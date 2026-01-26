@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import dao.StoreProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/addStoreProduct")
 public class StoreAddStoreProductServlet extends HttpServlet {
@@ -20,7 +20,7 @@ public class StoreAddStoreProductServlet extends HttpServlet {
 
         try {
             HttpSession session = req.getSession();
-            Integer storeId = (Integer) session.getAttribute("store_id");
+            Long storeId = (Long) session.getAttribute("store_id");
             if (storeId == null) {
                 resp.sendRedirect(req.getContextPath() + "/super/account/Sp_Login.jsp");
                 return;
@@ -28,18 +28,19 @@ public class StoreAddStoreProductServlet extends HttpServlet {
 
             String[] selectedProductIds = req.getParameterValues("productIds");
             if (selectedProductIds != null) {
-                StoreProductDAO storeDAO = new StoreProductDAO();
+                StoreDao storeDAO = new StoreDao();
+
                 boolean hasDuplicate = false;
 
                 for (String pid : selectedProductIds) {
                     int productId = Integer.parseInt(pid);
 
                     // 重複チェック
-                    if (storeDAO.isExists(productId, storeId)) {
+                    if (storeDAO.isStoreProductExists(productId, storeId)) {
                         hasDuplicate = true; // 重複があったフラグを立てる
                     } else {
                         // 重複していない場合のみ追加
-                        storeDAO.insertFromProduct(productId, storeId);
+                        storeDAO.insertStoreProductFromProduct(productId, storeId);
                     }
                 }
 

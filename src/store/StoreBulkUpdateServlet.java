@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import dao.StoreProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/storeBulkUpdate")
 public class StoreBulkUpdateServlet extends HttpServlet {
@@ -23,13 +23,14 @@ public class StoreBulkUpdateServlet extends HttpServlet {
             String[] prices = req.getParameterValues("prices");
 
             if (ids != null && prices != null) {
-                StoreProductDAO dao = new StoreProductDAO();
+                StoreDao dao = new StoreDao();
 
                 // ids.length に修正しました
                 for (int i = 0; i < ids.length; i++) {
                     int id = Integer.parseInt(ids[i]);
                     int price = Integer.parseInt(prices[i]);
-                    dao.updatePrice(id, price);
+
+                    dao.updateStoreProductPrice(id, price);
                 }
             }
 

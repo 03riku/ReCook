@@ -1,4 +1,4 @@
-package servlet;
+package store;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,8 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import bean.Product;
 import bean.StoreProduct;
-import dao.ProductDAO;
-import dao.StoreProductDAO;
+import dao.StoreDao;
 
 @WebServlet("/super/storeProductPage")
 public class StoreProductPageServlet extends HttpServlet {
@@ -24,19 +23,21 @@ public class StoreProductPageServlet extends HttpServlet {
 
         try {
             HttpSession session = req.getSession();
-            Integer storeId = (Integer) session.getAttribute("store_id");
+
+            Long storeId = (Long) session.getAttribute("store_id");
 
             if (storeId == null) {
                 resp.sendRedirect(req.getContextPath() + "/super/account/Sp_Login.jsp");
                 return;
             }
 
-            ProductDAO productDAO = new ProductDAO();
-            StoreProductDAO storeDAO = new StoreProductDAO();
+            StoreDao storeDao = new StoreDao();
 
             // DBから両方のリストを取得してリクエスト属性にセット
-            List<Product> productList = productDAO.getAllProducts();
-            List<StoreProduct> storeProductList = storeDAO.findByStoreId(storeId);
+            List<Product> productList = storeDao.getAllProducts();
+
+            // StoreDao đã được cập nhật để nhận tham số long, nên ta truyền storeId (Long) vào được
+            List<StoreProduct> storeProductList = storeDao.findStoreProductsByStoreId(storeId);
 
             req.setAttribute("productList", productList);
             req.setAttribute("storeProductList", storeProductList);
