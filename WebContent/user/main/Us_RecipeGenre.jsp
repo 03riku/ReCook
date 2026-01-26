@@ -96,30 +96,36 @@
 			</div>
 		</div>
 	</div>
-
-	<%-- 下部固定ナビゲーション --%>
-		<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
+	
+	<!-- 下部固定ナビゲーション -->
+<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
+  
+  <!-- ホーム -->
   <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
      class="text-dark text-decoration-none text-center bar-home"
      style="min-width: 60px;">ホーム</a>
 
+  <!-- 検索 -->
   <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
      class="text-dark text-decoration-none text-center bar-search"
      style="min-width: 60px;">検索</a>
 
+  <!-- 料理提案 -->
   <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-     class="text-dark text-decoration-none text-center bar-recipe active"
+     class="text-dark text-decoration-none text-center bar-recipe"
      style="min-width: 60px;">料理提案</a>
 
+  <!-- 店舗（★必ずサーブレットのURLを指定します） -->
   <a href="${pageContext.request.contextPath}/user/StoreList"
      class="text-dark text-decoration-none text-center bar-store"
      style="min-width: 60px;">店舗</a>
 
+  <!-- アカウント -->
   <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-   class="text-dark text-decoration-none text-center bar-account"
-   style="min-width: 60px;">アカウント</a>
-
-</nav>
+     class="text-dark text-decoration-none text-center bar-account"
+     style="min-width: 60px;">アカウント</a>
+     
+     </nav>
 
 </c:set>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
