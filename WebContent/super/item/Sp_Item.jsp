@@ -127,7 +127,7 @@ body { background-color: #F5F5F0; }
 			        <div class="table-header-area">
 			            <h5 class="mb-0">自店舗商品一覧</h5>
 			            <!-- 左と同じような青いボタン（一括更新）を追加 -->
-			            <button type="submit" class="btn btn-sm btn-success px-3">一括更新</button>
+			            <button type="submit" class="btn btn-sm btn-success px-3">更新</button>
 			        </div>
 
 			        <div class="table-scroll-container">
@@ -154,13 +154,15 @@ body { background-color: #F5F5F0; }
 			                            <td class="text-center">
 			                                <!-- 個別の削除ボタン。formactionを使って別のサーブレットに飛ばす -->
 			                                <div class="btn-group">
-			                                    <!-- 個別更新（その行だけ）もできるようにしておく場合は以下 -->
-			                                    <button type="submit" formaction="<%= request.getContextPath() %>/super/storeAction"
-			                                            name="action" value="update" class="btn btn-sm btn-outline-success">更新</button>
+			                                 												<button type="submit"
+												        formaction="<%= request.getContextPath() %>/super/storeAction"
+												        name="storeProductId"
+												        value="${sp.storeProductId}"
+												        class="btn btn-sm btn-danger"
+												        onclick="return confirm('削除しますか？')">
+												    削除
+												</button>
 
-			                                    <button type="submit" formaction="<%= request.getContextPath() %>/super/storeAction"
-			                                            name="action" value="delete" class="btn btn-sm btn-danger"
-			                                            onclick="return confirm('削除しますか？')">削除</button>
 			                                </div>
 			                                <!-- 個別操作の時に「どのIDか」を判別させるための隠しパラメータ（個別ボタン用） -->
 			                                <input type="hidden" name="storeProductId" value="${sp.storeProductId}" disabled class="row-id">

@@ -131,7 +131,7 @@
             }
         }
         sb.append("</select>");
-        sb.append("<div id=\"genreError\" class=\"text-danger small mt-1\" style=\"display: none;\"><i class=\"bi bi-exclamation-circle\"></i> ジャンル選択してください</div>");
+        sb.append("<div id=\"genreError\" class=\"text-danger small mt-1\" style=\"display: none;\"><i class=\"bi bi-exclamation-circle\"></i> ジャンルを選択してください</div>");
         sb.append("</div>");
 
         // ★食材(Product)検索とタグ追加機能
