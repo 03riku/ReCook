@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import dao.UserDAO;
 
+/**
+ * 店舗一覧表示を担当するサーブレット
+ */
 @WebServlet("/user/StoreList")
 public class User_StoreServlet extends HttpServlet {
     @Override
@@ -23,13 +26,13 @@ public class User_StoreServlet extends HttpServlet {
         try {
             UserDAO dao = new UserDAO();
 
-            // 検索・絞り込み実行
+            // 検索・絞り込み実行（全件またはキーワード・県による検索のみ）
             request.setAttribute("storeList", dao.searchStores(keyword, pref));
-            // 県リスト取得
+            // 県リスト取得（プルダウン用）
             request.setAttribute("prefList", dao.getPrefectures());
             request.setAttribute("pageTitle", "店舗一覧");
 
-            // JSPへ移動
+            // 店舗一覧画面（Us_Store.jsp）へ移動
             request.getRequestDispatcher("/user/main/Us_Store.jsp").forward(request, response);
 
         } catch (Exception e) {

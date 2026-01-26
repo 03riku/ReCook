@@ -37,10 +37,7 @@
         /* クーポンボタン（黄色） */
         .coupon-btn { background: #ffff00; border: 2px solid #333; color: #333; font-weight: bold; padding: 15px; width: 100%; display: block; text-align: center; text-decoration: none; cursor: pointer; }
 
-        /* 店舗検索ボタン（白） */
-        .store-search-btn { background: #fff; border: 2px solid #333; color: #333; font-weight: bold; padding: 12px; width: 100%; display: block; text-align: center; text-decoration: none; }
-
-        /* バーコード表示エリア（最初は隠しておく） */
+        /* バーコード表示エリア */
         #barcodeArea {
             display: none; background: #fff; border: 2px solid #333;
             padding: 20px; text-align: center; border-radius: 10px;
@@ -106,9 +103,8 @@
 
             <div class="dashed-line"></div>
 
-            <%-- 6. クーポンと店舗検索 --%>
-            <div class="mt-4">
-                <%-- ★クーポンボタン：店舗画面から来た場合（fromStore == 'true'）のみ表示 --%>
+            <%-- 6. クーポン表示（店舗画面から来た場合のみ） --%>
+            <div class="mt-4 mb-5">
                 <c:if test="${fromStore == 'true'}">
                     <div class="text-center text-danger small fw-bold mb-2">
                         ※材料を全て購入するとクーポンが有効になります
@@ -117,28 +113,20 @@
                         クーポンを表示する
                     </a>
 
-                    <%-- バーコード表示エリア（ボタンを押すとJSで表示される） --%>
                     <div id="barcodeArea" class="shadow-sm mb-3">
                         <p class="fw-bold mb-2">レジで提示してください</p>
-                        <%-- ★ 画像ファイル名を baakoodo.png に修正しました --%>
                         <img src="${pageContext.request.contextPath}/pic/baakoodo.png" alt="バーコード" style="max-width: 100%; height: auto;">
                     </div>
                 </c:if>
-
-                <%-- 取扱店舗検索ボタン --%>
-                <a href="${pageContext.request.contextPath}/user/StoreList?menuId=${menu.menuItemId}" class="store-search-btn shadow-sm mb-5">
-                    <i class="fas fa-map-marker-alt"></i> このクーポンが使えるお店を探す
-                </a>
+                <%-- ★ ここにあった「店舗検索ボタン」を削除しました --%>
             </div>
 
-            <div style="height: 80px;"></div>
+            <div style="height: 50px;"></div>
         </div>
     </div>
 
-    <%-- クーポン表示用スクリプト --%>
     <script>
         function showBarcode() {
-            // バーコードエリアを表示し、ボタンを隠す
             document.getElementById('barcodeArea').style.display = 'block';
             document.getElementById('couponBtn').style.display = 'none';
         }
