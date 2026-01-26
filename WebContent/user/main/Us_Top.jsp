@@ -81,13 +81,15 @@
           </div>
         </a>
       </div>
+
       <%-- 3. 店舗 --%>
       <div class="col-6">
-        <a href="${pageContext.request.contextPath}/user/StoreList" class="text-decoration-none">
-          <div class="menu-btn" style="background-color:#fff2cc;">
-            <h3 class="text-dark">店舗</h3>
-          </div>
-        </a>
+      <%-- もしサーブレットが /user/StoreList で登録されているなら、これで正解です --%>
+      <a href="${pageContext.request.contextPath}/user/StoreList" class="text-decoration-none">
+      <div class="menu-btn" style="background-color:#fff2cc;">
+      <h3 class="text-dark">店舗</h3>
+      </div>
+      </a>
       </div>
       <%-- 4. アカウント --%>
       <div class="col-6">
