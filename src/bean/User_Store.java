@@ -3,17 +3,17 @@ package bean;
 import java.io.Serializable;
 
 public class User_Store implements Serializable {
-    private int storeId;
+    private long storeId; // ★ int から long に変更
     private String storeName;
-    private String storeAddress; // ★追加
+    private String storeAddress;
 
-    // ゲッターとセッター
-    public int getStoreId() { return storeId; }
-    public void setStoreId(int storeId) { this.storeId = storeId; }
+    // ★ long 用のゲッターとセッター
+    public long getStoreId() { return storeId; }
+    public void setStoreId(long storeId) { this.storeId = storeId; }
 
     public String getStoreName() { return storeName; }
     public void setStoreName(String storeName) { this.storeName = storeName; }
 
-    public String getStoreAddress() { return storeAddress; } // ★追加
-    public void setStoreAddress(String storeAddress) { this.storeAddress = storeAddress; } // ★追加
+    public String getStoreAddress() { return storeAddress; }
+    public void setStoreAddress(String storeAddress) { this.storeAddress = storeAddress; }
 }

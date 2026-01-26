@@ -1,4 +1,4 @@
-package servlet; // ★この1行が重要です
+package servlet;
 
 import java.io.IOException;
 
@@ -18,16 +18,15 @@ public class User_StoreMenuServlet extends HttpServlet {
         String idStr = request.getParameter("id");
         try {
             if (idStr != null) {
-                int storeId = Integer.parseInt(idStr);
+                // ★ Integer.parseInt から Long.parseLong に変更
+                long storeId = Long.parseLong(idStr);
                 UserDAO dao = new UserDAO();
 
-                // ★店名を取得
                 User_Store store = dao.getStoreById(storeId);
                 String title = (store != null) ? store.getStoreName() + " 限定メニュー" : "店舗限定メニュー";
 
-                // メニューリストを取得
                 request.setAttribute("menuList", dao.getMenusByStoreId(storeId));
-                request.setAttribute("pageTitle", title); // 動的なタイトル
+                request.setAttribute("pageTitle", title);
                 request.setAttribute("fromStore", true);
 
                 request.getRequestDispatcher("/user/main/Us_Recipes.jsp").forward(request, response);

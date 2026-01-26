@@ -12,16 +12,8 @@ import bean.GeneralUser;
 import bean.Product;
 import bean.User_Store;
 
-/**
- * 【一般ユーザー用データ操作クラス】
- * ログイン、料理の検索、お気に入り登録、店舗情報の表示など、
- * 一般ユーザーがアプリで行う主要な操作をデータベースと連携させます。
- */
 public class UserDAO {
 
-    /**
-     * データベースへ接続するためのメソッド
-     */
     private Connection getConnection() throws Exception {
         Class.forName("org.h2.Driver");
         String url = "jdbc:h2:tcp://localhost/~/Re.Cook";
@@ -30,27 +22,17 @@ public class UserDAO {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // --- 1. ユーザー管理（ログイン・新規登録・重複チェック） ---
-
-    /**
-     * ★追加機能：メールアドレスの重複チェック
-     * 登録済みの場合は true、未登録の場合は false を返します。
-     */
+    // --- ユーザー管理 ---
     public boolean isEmailExists(String email) throws Exception {
         String sql = "SELECT COUNT(*) FROM GENERAL_USER WHERE EMAIL = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
+            if (rs.next()) { return rs.getInt(1) > 0; }
         }
         return false;
     }
 
-    /**
-     * ログインチェック：メールとパスワードが一致するユーザーを返します
-     */
     public GeneralUser checkLogin(String email, String password) throws Exception {
         String sql = "SELECT * FROM GENERAL_USER WHERE EMAIL = ? AND USER_PASSWORD = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -68,25 +50,17 @@ public class UserDAO {
         return null;
     }
 
-    /**
-     * 新規ユーザー登録：入力された情報をデータベースに保存します
-     */
     public boolean registerUser(String email, String password, String name) throws Exception {
         String sql = "INSERT INTO GENERAL_USER (EMAIL, USER_PASSWORD, ACCOUNT_NAME) VALUES (?, ?, ?)";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ps.setString(2, password);
-            ps.setString(3, name);
+            ps.setString(1, email); ps.setString(2, password); ps.setString(3, name);
             return ps.executeUpdate() > 0;
         }
     }
 
-    // --- 2. 料理メニュー（詳細・検索・材料） ---
-
+    // --- 料理メニュー ---
     public CookMenu getCookMenuById(int menuItemId, int userId) throws Exception {
-        String sql = "SELECT c.*, g.GENRE_NAME FROM COOK_MENU c " +
-                     "LEFT JOIN GENRE g ON c.GENRE_ID = g.GENRE_ID " +
-                     "WHERE c.MENU_ITEM_ID = ?";
+        String sql = "SELECT c.*, g.GENRE_NAME FROM COOK_MENU c LEFT JOIN GENRE g ON c.GENRE_ID = g.GENRE_ID WHERE c.MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, menuItemId);
             ResultSet rs = ps.executeQuery();
@@ -94,11 +68,9 @@ public class UserDAO {
                 CookMenu menu = new CookMenu();
                 fillCookMenu(menu, rs);
                 menu.setGenreName(rs.getString("GENRE_NAME"));
-
                 String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
                 try (PreparedStatement psFav = con.prepareStatement(checkSql)) {
-                    psFav.setInt(1, userId);
-                    psFav.setInt(2, menuItemId);
+                    psFav.setInt(1, userId); psFav.setInt(2, menuItemId);
                     ResultSet rsFav = psFav.executeQuery();
                     menu.setFavoriteId(rsFav.next() ? 2 : 1);
                 }
@@ -110,9 +82,7 @@ public class UserDAO {
 
     public List<Product> getIngredientsByMenuId(int menuItemId) throws Exception {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT p.* FROM PRODUCT p " +
-                     "JOIN PRODUCT_COOK_MENU pcm ON p.PRODUCT_ID = pcm.PRODUCT_ID " +
-                     "WHERE pcm.MENU_ITEM_ID = ?";
+        String sql = "SELECT p.* FROM PRODUCT p JOIN PRODUCT_COOK_MENU pcm ON p.PRODUCT_ID = pcm.PRODUCT_ID WHERE pcm.MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, menuItemId);
             ResultSet rs = ps.executeQuery();
@@ -126,14 +96,10 @@ public class UserDAO {
 
     public List<CookMenu> searchCookMenu(String keyword) throws Exception {
         List<CookMenu> list = new ArrayList<>();
-        String sql = "SELECT DISTINCT c.* FROM COOK_MENU c " +
-                     "LEFT JOIN PRODUCT_COOK_MENU pcm ON c.MENU_ITEM_ID = pcm.MENU_ITEM_ID " +
-                     "LEFT JOIN PRODUCT p ON pcm.PRODUCT_ID = p.PRODUCT_ID " +
-                     "WHERE c.DISH_NAME LIKE ? OR p.PRODUCT_NAME LIKE ?";
+        String sql = "SELECT DISTINCT c.* FROM COOK_MENU c LEFT JOIN PRODUCT_COOK_MENU pcm ON c.MENU_ITEM_ID = pcm.MENU_ITEM_ID LEFT JOIN PRODUCT p ON pcm.PRODUCT_ID = p.PRODUCT_ID WHERE c.DISH_NAME LIKE ? OR p.PRODUCT_NAME LIKE ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             String wild = "%" + (keyword != null ? keyword : "") + "%";
-            ps.setString(1, wild);
-            ps.setString(2, wild);
+            ps.setString(1, wild); ps.setString(2, wild);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CookMenu menu = new CookMenu();
@@ -159,11 +125,12 @@ public class UserDAO {
         return list;
     }
 
-    public List<CookMenu> getMenusByStoreId(int storeId) throws Exception {
+    // ★ int から long に変更
+    public List<CookMenu> getMenusByStoreId(long storeId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
         String sql = "SELECT c.* FROM COOK_MENU c JOIN STORE_MENU sm ON c.MENU_ITEM_ID = sm.MENU_ITEM_ID WHERE sm.STORE_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, storeId);
+            ps.setLong(1, storeId); // ★ setLong
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CookMenu menu = new CookMenu();
@@ -174,13 +141,11 @@ public class UserDAO {
         return list;
     }
 
-    // --- 3. お気に入り管理 ---
-
+    // --- お気に入り管理 ---
     public void toggleFavorite(int userId, int menuItemId) throws Exception {
         String checkSql = "SELECT * FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(checkSql)) {
-            ps.setInt(1, userId);
-            ps.setInt(2, menuItemId);
+            ps.setInt(1, userId); ps.setInt(2, menuItemId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 String delSql = "DELETE FROM FAVORITE_MENU WHERE USER_ID = ? AND MENU_ITEM_ID = ?";
@@ -214,16 +179,16 @@ public class UserDAO {
         return list;
     }
 
-    // --- 4. 店舗管理 ---
-
-    public User_Store getStoreById(int id) throws Exception {
+    // --- 店舗管理 ---
+    // ★ int から long に変更
+    public User_Store getStoreById(long id) throws Exception {
         String sql = "SELECT * FROM STORE WHERE STORE_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setLong(1, id); // ★ setLong
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getInt("STORE_ID"));
+                s.setStoreId(rs.getLong("STORE_ID")); // ★ getLong
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 return s;
@@ -240,7 +205,7 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getInt("STORE_ID"));
+                s.setStoreId(rs.getLong("STORE_ID")); // ★ getLong
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 list.add(s);
@@ -275,7 +240,7 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getInt("STORE_ID"));
+                s.setStoreId(rs.getLong("STORE_ID")); // ★ ここでエラーが出ていた箇所の修正：getLong
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 list.add(s);
