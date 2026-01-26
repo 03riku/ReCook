@@ -1,7 +1,7 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+\<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<%-- 1. ページタイトルの準備：サーブレットから名前が届いていればそれを使い、なければ「店舗一覧」を表示します --%>
+<%-- 1. ページタイトルの準備 --%>
 <c:set var="displayTitle" value="${not empty pageTitle ? pageTitle : '店舗一覧'}" scope="request" />
 <c:set var="pageTitle" value="${displayTitle}" scope="request" />
 
@@ -10,10 +10,9 @@
 
     <style>
         /* --- 全体の見た目設定 --- */
-        body { background: rgb(238, 237, 234) !important; } /* 背景を薄いグレーに */
-        .page-header { background-color: #fff2cc !important; } /* 見出し部分を薄い黄色に */
+        body { background: rgb(238, 237, 234) !important; }
+        .page-header { background-color: #fff2cc !important; }
 
-        /* 画面上部の固定ヘッダー（戻るボタンがある場所） */
         .header-bar {
             display: flex; align-items: center; padding: 10px;
             background: #fff; border-bottom: 1px solid #ddd;
@@ -21,7 +20,6 @@
         }
         .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 検索バーのデザイン */
         .search-area { display: flex; gap: 10px; margin: 15px; }
         .pref-select {
             border: 2px solid #333; border-radius: 10px;
@@ -33,20 +31,18 @@
         }
         .store-search-input { border: none !important; flex-grow: 1; padding-left: 10px; outline: none; }
 
-        /* 店舗カード（1店舗分のボタン）のデザイン */
         .store-box {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             height: 150px; width: 100%;
             border: 1px solid #000; color: #333 !important; text-decoration: none !important;
             padding: 10px; transition: opacity 0.2s;
-            margin-bottom: -1px; margin-right: -1px; /* 枠線が重なって太くならないように調整 */
+            margin-bottom: -1px; margin-right: -1px;
         }
-        .store-box:hover { opacity: 0.8; } /* 触れた時に少し透明にする */
-        .bg-blue { background-color: #9fc5e8 !important; } /* カードの色：青 */
-        .bg-white { background-color: #ffffff !important; } /* カードの色：白 */
+        .store-box:hover { opacity: 0.8; }
+        .bg-blue { background-color: #9fc5e8 !important; }
+        .bg-white { background-color: #ffffff !important; }
 
-        /* 下部メニューの動く棒の設定 */
         .bottom-nav a{ position: relative; padding-bottom: 10px; }
         .bottom-nav a::after{
             content: ""; position: absolute; left: 50%; bottom: 2px;
@@ -57,17 +53,16 @@
         .bottom-nav a:hover::after,
         .bottom-nav a.active::after{ transform: translateX(-50%) scaleX(1) !important; }
 
-        /* ナビゲーションの各メニューのテーマカラー */
         .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
         .bottom-nav a.bar-store   { --bar-color:#fff2cc; }
         .bottom-nav a.bar-account { --bar-color:#ead1dc; }
 
-        .page-safe-bottom{ padding-bottom: 90px; } /* 下部ナビに隠れないための余白 */
+        .page-safe-bottom{ padding-bottom: 90px; }
     </style>
 
-    <%-- 3. 上部ヘッダー：戻るボタンと、動的に変わるタイトルを表示 --%>
+    <%-- 3. 上部ヘッダー --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <h5 class="mb-0 fw-bold">${pageTitle}</h5>
@@ -75,18 +70,16 @@
 
     <div class="container py-3 page-safe-bottom" style="max-width: 500px;">
 
-        <%-- 4. 検索エリア：特定の料理で絞り込んでいない時だけ「都道府県」と「店名」の検索を表示します --%>
+        <%-- 4. 検索エリア --%>
         <c:if test="${empty param.menuId}">
             <form action="${pageContext.request.contextPath}/user/StoreList" method="get">
                 <div class="search-area">
-                    <%-- 都道府県の選択プルダウン --%>
                     <select name="pref" class="pref-select">
                         <option value="">全ての県</option>
                         <c:forEach var="p" items="${prefList}">
                             <option value="${p}" ${param.pref == p ? 'selected' : ''}>${p}</option>
                         </c:forEach>
                     </select>
-                    <%-- 店名の入力欄 --%>
                     <div class="store-search-group shadow-sm">
                         <input type="text" name="keyword" class="store-search-input"
                                placeholder="店名で検索" value="${param.keyword}">
@@ -98,61 +91,39 @@
             </form>
         </c:if>
 
-        <%-- 5. 店舗リストの表示：DBから届いたお店を1つずつループしてカード形式で表示 --%>
+        <%-- 5. 店舗リストの表示 --%>
         <div class="row g-0">
             <c:forEach var="s" items="${storeList}" varStatus="status">
                 <div class="col-6">
-                    <%-- お店を選んだら、そのお店のメニュー画面（StoreMenuサーブレット）へ移動します --%>
                     <a href="${pageContext.request.contextPath}/user/StoreMenu?id=${s.storeId}"
                        class="store-box ${status.index % 4 == 0 || status.index % 4 == 3 ? 'bg-white' : 'bg-blue'}">
-                        <%-- 住所（都道府県）を表示 --%>
                         <div style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">${s.storeAddress}</div>
-                        <%-- 店名を表示 --%>
                         <div style="font-weight: bold;">${s.storeName}</div>
                     </a>
                 </div>
             </c:forEach>
         </div>
 
-        <%-- 6. 見つからなかった時の表示：お店が1つも届かなかった場合に表示されます --%>
+        <%-- 6. 見つからなかった時の表示 --%>
         <c:if test="${empty storeList}">
             <div class="text-center py-5">
                 <i class="fas fa-store-slash fa-3x mb-3 text-muted"></i>
                 <p class="text-muted">該当するお店が見つかりませんでした。</p>
-                <a href="${pageContext.request.contextPath}/user/StoreList" class="btn btn-outline-secondary btn-sm">店舗一覧に戻る</a>
+                <%-- ↓ ここを「ホーム画面に戻る」に変更しました --%>
+                <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp" class="btn btn-outline-secondary btn-sm">ホーム画面に戻る</a>
             </div>
         </c:if>
     </div>
+
     <!-- 下部固定ナビゲーション -->
-<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
-
-  <!-- ホーム -->
-  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
-     class="text-dark text-decoration-none text-center bar-home"
-     style="min-width: 60px;">ホーム</a>
-
-  <!-- 検索 -->
-  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
-     class="text-dark text-decoration-none text-center bar-search"
-     style="min-width: 60px;">検索</a>
-
-  <!-- 料理提案 -->
-  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-     class="text-dark text-decoration-none text-center bar-recipe"
-     style="min-width: 60px;">料理提案</a>
-
-  <!-- 店舗（★必ずサーブレットのURLを指定します） -->
-  <a href="${pageContext.request.contextPath}/user/StoreList"
-     class="text-dark text-decoration-none text-center bar-store"
-     style="min-width: 60px;">店舗</a>
-
-  <!-- アカウント -->
-  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-     class="text-dark text-decoration-none text-center bar-account"
-     style="min-width: 60px;">アカウント</a>
-
-     </nav>
+    <nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
+        <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp" class="text-dark text-decoration-none text-center bar-home" style="min-width: 60px;">ホーム</a>
+        <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp" class="text-dark text-decoration-none text-center bar-search" style="min-width: 60px;">検索</a>
+        <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp" class="text-dark text-decoration-none text-center bar-recipe" style="min-width: 60px;">料理提案</a>
+        <a href="${pageContext.request.contextPath}/user/StoreList" class="text-dark text-decoration-none text-center bar-store" style="min-width: 60px;">店舗</a>
+        <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp" class="text-dark text-decoration-none text-center bar-account" style="min-width: 60px;">アカウント</a>
+    </nav>
 </c:set>
 
-<%-- 8. 土台となる base.jsp を読み込んで、上記の内容をはめ込む --%>
+<%-- 8. 土台となる base.jsp を読み込む --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
