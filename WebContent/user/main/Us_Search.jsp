@@ -129,30 +129,36 @@
     <%-- 下部メニューに隠れないように余白を作る --%>
     <div style="height: 90px;"></div>
   </div>
+  
+  <!-- 下部固定ナビゲーション -->
+<nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
+  
+  <!-- ホーム -->
+  <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
+     class="text-dark text-decoration-none text-center bar-home"
+     style="min-width: 60px;">ホーム</a>
 
-  <%-- 5. 下部固定ナビゲーション：常に画面の下に表示されるメニュー --%>
-  <nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
-    <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp"
-       class="text-dark text-decoration-none text-center bar-home"
-       style="min-width: 60px;">ホーム</a>
+  <!-- 検索 -->
+  <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
+     class="text-dark text-decoration-none text-center bar-search"
+     style="min-width: 60px;">検索</a>
 
-    <%-- 現在のページ（検索）なので "active" クラスを付与して線を常に表示 --%>
-    <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp"
-       class="text-dark text-decoration-none text-center bar-search active"
-       style="min-width: 60px;">検索</a>
+  <!-- 料理提案 -->
+  <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
+     class="text-dark text-decoration-none text-center bar-recipe"
+     style="min-width: 60px;">料理提案</a>
 
-    <a href="${pageContext.request.contextPath}/user/main/Us_RecipeGenre.jsp"
-       class="text-dark text-decoration-none text-center bar-recipe"
-       style="min-width: 60px;">料理提案</a>
+  <!-- 店舗（★必ずサーブレットのURLを指定します） -->
+  <a href="${pageContext.request.contextPath}/user/StoreList"
+     class="text-dark text-decoration-none text-center bar-store"
+     style="min-width: 60px;">店舗</a>
 
-    <a href="${pageContext.request.contextPath}/user/StoreList"
-       class="text-dark text-decoration-none text-center bar-store"
-       style="min-width: 60px;">店舗</a>
-
-    <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
-       class="text-dark text-decoration-none text-center bar-account"
-       style="min-width: 60px;">アカウント</a>
-  </nav>
+  <!-- アカウント -->
+  <a href="${pageContext.request.contextPath}/user/main/Us_Account.jsp"
+     class="text-dark text-decoration-none text-center bar-account"
+     style="min-width: 60px;">アカウント</a>
+     
+     </nav>
 
 </c:set>
 
