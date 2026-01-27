@@ -4,7 +4,9 @@
 <%@ page import="java.util.*, bean.Store"%>
 
 <%!
-    // 左カラム（店舗一覧リスト）のHTMLを生成するメソッド
+    // ==========================================
+    // Body 1: 左カラム（店舗一覧リスト）生成
+    // ==========================================
     private String createBody1Content(List<String[]> stores, String contextPath) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<h4 class=\"mb-4 text-dark\">店舗一覧</h4>");
@@ -18,12 +20,11 @@
 		sb.append("<button class=\"btn btn-dark\" type=\"submit\">検索</button>");
 		sb.append("</div></form>");
 
-        // 店舗リストテーブル
+        // テーブル表示
 		sb.append("<div class=\"table-responsive\"><table class=\"table table-hover\"><tbody>");
 
 		if (stores != null && !stores.isEmpty()) {
 			for (String[] store : stores) {
-                // 編集用URLの生成 (クリックで右側に詳細を表示)
 				String editUrl = contextPath + "/admin/store/StoreServlet?editId=" + store[0];
 				sb.append("<tr><td><a href=\"").append(editUrl)
 						.append("\" class=\"text-dark text-decoration-none d-block\">");
@@ -36,11 +37,13 @@
 		return sb.toString();
 	}
 
-    // 右カラム（詳細・編集・追加・削除確認）のHTMLを生成するメソッド
+    // ==========================================
+    // Body 2: 右カラム（入力フォーム ＆ 削除確認）生成
+    // ==========================================
 	private String createBody2Content(String contextPath, Store sel, Object msg, String mode) {
 		StringBuilder sb = new StringBuilder();
 
-        // 処理結果メッセージ（成功/失敗）の表示
+        // メッセージ表示 (成功/失敗)
 		if (msg != null) {
 			String msgStr = msg.toString();
 			String alertClass = msgStr.contains("Error") ? "alert-danger" : "alert-success";
@@ -48,7 +51,7 @@
 					.append("</div>");
 		}
 
-        // 削除確認モードの場合
+        // --- 削除確認画面 ---
 		if (sel != null && "confirm".equals(mode)) {
 			sb.append("<div class=\"card border-danger text-center p-4\"><h4 class=\"text-danger\">削除の確認</h4>");
 			sb.append("<p>本当に <strong>").append(sel.getStoreName()).append("</strong> を削除しますか？</p>");
@@ -61,29 +64,32 @@
 					.append(sel.getStoreId())
 					.append("\" class=\"btn btn-outline-dark btn-large-stacked d-flex align-items-center justify-content-center\">いいえ</a>");
 			sb.append("</div></form></div>");
+
+        // --- 編集・追加フォーム ---
 		} else {
-            // 編集モードか新規追加モードかの判定
 			boolean isEdit = (sel != null);
 			sb.append("<h4 class=\"mb-4 text-dark\">").append(isEdit ? "店舗編集" : "店舗追加").append("</h4>");
-
-            // フォーム開始 (JSバリデーションあり)
 			sb.append("<form id=\"storeForm\" action=\"").append(contextPath)
 					.append("/admin/store/StoreServlet\" method=\"post\" onsubmit=\"return validateForm()\">");
 
+			// 編集モード時: 元のIDと元の名前を保持（バリデーション用）
 			if (isEdit) {
-                // 更新時に元のIDを保持するための隠しフィールド
 				sb.append("<input type=\"hidden\" name=\"oldStoreId\" value=\"").append(sel.getStoreId()).append("\">");
-			}
+                // 【重要】重複チェックの際、自分自身の名前を除外するために保持
+                sb.append("<input type=\"hidden\" id=\"originalStoreName\" value=\"").append(sel.getStoreName()).append("\">");
+			} else {
+                // 新規時は空
+                sb.append("<input type=\"hidden\" id=\"originalStoreName\" value=\"\">");
+            }
 
 			sb.append("<div class=\"row\"><div class=\"col-8\">");
 
-            // 入力フィールドの定義 {ラベル, name属性, 値}
+            // 入力フィールド定義
 			String[][] fields = {{"店舗名", "storeName", isEdit ? sel.getStoreName() : ""},
 					{"店舗ID", "storeId", isEdit ? String.valueOf(sel.getStoreId()) : ""},
 					{"パスワード", "storePassword", isEdit ? sel.getStorePassword() : ""},
 					{"住所", "storeAddress", isEdit ? sel.getStoreAddress() : ""}};
 
-            // ループで入力フィールドを生成
 			for (String[] f : fields) {
 				sb.append("<div class=\"row g-3 align-items-center mb-4\">");
 				sb.append("<div class=\"col-4\"><label class=\"fw-bold\">").append(f[0]).append("</label></div>");
@@ -91,19 +97,21 @@
 						.append(f[1]).append("\" value=\"").append(f[2])
 						.append("\" class=\"form-control form-control-line\" required>");
 
-				// ID入力エラー時のメッセージ表示エリア
+				// IDエラーメッセージ用コンテナ
 				if (f[1].equals("storeId")) {
 					sb.append("<div id=\"idError\" class=\"text-danger small mt-1\" style=\"display:none;\"></div>");
 				}
+                // 店舗名重複エラーメッセージ用コンテナ
+                if (f[1].equals("storeName")) {
+                    sb.append("<div id=\"nameError\" class=\"text-danger small mt-1\" style=\"display:none;\">この店舗は既に登録されました。</div>");
+                }
 				sb.append("</div></div>");
 			}
-
-            // ボタンエリア
 			sb.append(
 					"</div><div class=\"col-4 d-flex justify-content-end align-items-start pt-4\"><div class=\"d-grid gap-3\">");
 
 			if (isEdit) {
-                // 編集モード用のボタン
+                // 編集モードのボタン
 				sb.append(
 						"<button type=\"submit\" name=\"action\" value=\"update\" class=\"btn btn-dark btn-large-stacked\">保存</button>");
 				sb.append("<a href=\"").append(contextPath).append("/admin/store/StoreServlet?editId=")
@@ -112,7 +120,7 @@
 				sb.append("<a href=\"").append(contextPath).append(
 						"/admin/store/StoreServlet\" class=\"btn btn-outline-dark btn-large-stacked d-flex align-items-center justify-content-center\">新規</a>");
 			} else {
-                // 新規追加モード用のボタン
+                // 追加モードのボタン
 				sb.append(
 						"<button type=\"submit\" name=\"action\" value=\"add\" class=\"btn btn-dark btn-large-stacked\">追加</button>");
 				sb.append(
@@ -140,52 +148,90 @@
 }
 </style>
 
-<script>
-    // フォーム送信時のバリデーション（入力チェック）
-	function validateForm() {
-		const storeIdInput = document.getElementById('storeId');
-		const idError = document.getElementById('idError');
-		const val = storeIdInput.value;
-
-        // エラー状態をリセット
-		idError.style.display = 'none';
-		storeIdInput.classList.remove('is-invalid');
-
-        // 10桁の数字チェック
-		if (!/^\d{10}$/.test(val)) {
-			idError.innerText = "店舗IDは10桁の数字で入力してください。";
-			idError.style.display = 'block';
-			storeIdInput.focus();
-			return false;
-		}
-
-        // 先頭が0でないかチェック
-		if (val.charAt(0) === '0') {
-			idError.innerText = "最初の桁は０以外入力してください。";
-			idError.style.display = 'block';
-			storeIdInput.focus();
-			return false;
-		}
-
-		return true;
-	}
-</script>
-
 <%
-    // ページ基本設定
+    // --- メイン処理 (Java) ---
 	request.setAttribute("pageTitle", "店舗管理");
 	request.setAttribute("currentMenu", "store");
 
-    // コントローラーからのデータ取得
+    // Controllerからのデータ
 	List<String[]> storeList = (List<String[]>) request.getAttribute("stores");
-	Store sel = (Store) request.getAttribute("selectedStore"); // 選択された店舗情報（編集時）
+	Store sel = (Store) request.getAttribute("selectedStore");
 	Object msg = request.getAttribute("message");
-	String mode = (String) request.getAttribute("mode"); // モード（通常/確認など）
+	String mode = (String) request.getAttribute("mode");
 
-    // 左カラム（一覧）のHTML生成
+    // JSでの重複チェック用に、全店舗名のリストをJSON配列文字列として生成する
+    StringBuilder jsonStoreNames = new StringBuilder("[");
+    if (storeList != null) {
+        for (int i = 0; i < storeList.size(); i++) {
+            // 店舗名をエスケープして追加
+            jsonStoreNames.append("\"").append(storeList.get(i)[1].replace("\"", "\\\"")).append("\"");
+            if (i < storeList.size() - 1) {
+                jsonStoreNames.append(",");
+            }
+        }
+    }
+    jsonStoreNames.append("]");
+
 	request.setAttribute("pageContentBody1", createBody1Content(storeList, request.getContextPath()));
-    // 右カラム（詳細）のHTML生成
 	request.setAttribute("pageContentBody2", createBody2Content(request.getContextPath(), sel, msg, mode));
 %>
+
+<script>
+    // サーバーサイドで生成した店舗名リストを受け取る
+    const existingStoreNames = <%= jsonStoreNames.toString() %>;
+
+	function validateForm() {
+        let isValid = true;
+
+        // --- 1. 店舗IDのバリデーション ---
+		const storeIdInput = document.getElementById('storeId');
+		const idError = document.getElementById('idError');
+		const idVal = storeIdInput.value;
+
+        // エラーリセット
+		idError.style.display = 'none';
+		storeIdInput.classList.remove('is-invalid');
+
+        // チェック: 10桁の数字
+		if (!/^\d{10}$/.test(idVal)) {
+			idError.innerText = "店舗IDは10桁の数字で入力してください。";
+			idError.style.display = 'block';
+			storeIdInput.focus();
+			isValid = false;
+        // チェック: 先頭が0でないか
+		} else if (idVal.charAt(0) === '0') {
+			idError.innerText = "最初の桁は０以外入力してください。";
+			idError.style.display = 'block';
+			storeIdInput.focus();
+			isValid = false;
+		}
+
+        // --- 2. 店舗名の重複チェック ---
+        const storeNameInput = document.getElementById('storeName');
+        const nameError = document.getElementById('nameError');
+        const nameVal = storeNameInput.value.trim();
+        // 編集モードの場合、変更前の名前を取得
+        const originalName = document.getElementById('originalStoreName').value;
+
+        nameError.style.display = 'none';
+
+        if (nameVal !== "") {
+            // 入力された名前が既存リストに存在するか確認
+            const isDuplicate = existingStoreNames.some(name => name === nameVal);
+
+            // 重複している場合
+            if (isDuplicate) {
+                // ただし、「元の名前と同じ」場合はOK（編集で名前を変えなかった場合）
+                if (nameVal !== originalName) {
+                    nameError.style.display = 'block'; // エラーメッセージ表示
+                    if(isValid) storeNameInput.focus(); // IDエラーがなければこちらにフォーカス
+                    isValid = false;
+                }
+            }
+        }
+
+		return isValid;
+	}
+</script>
 
 <c:import url="../Ad_base.jsp" />
