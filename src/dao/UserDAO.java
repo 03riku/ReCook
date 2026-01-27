@@ -125,12 +125,19 @@ public class UserDAO {
         return list;
     }
 
-    // ★ int から long に変更
+    // ★ 修正箇所: クーポン期間内のメニューのみ取得
     public List<CookMenu> getMenusByStoreId(long storeId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
-        String sql = "SELECT c.* FROM COOK_MENU c JOIN STORE_MENU sm ON c.MENU_ITEM_ID = sm.MENU_ITEM_ID WHERE sm.STORE_ID = ?";
+
+        // COUPONテーブルを結合し、現在時刻が開始〜終了の間にあるレコードに限定する
+        String sql = "SELECT DISTINCT c.* FROM COOK_MENU c " +
+                     "JOIN COUPON cp ON c.MENU_ITEM_ID = cp.MENU_ITEM_ID " +
+                     "WHERE cp.STORE_ID = ? " +
+                     "AND cp.START_TIME <= CURRENT_TIMESTAMP " +
+                     "AND cp.END_TIME >= CURRENT_TIMESTAMP";
+
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, storeId); // ★ setLong
+            ps.setLong(1, storeId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CookMenu menu = new CookMenu();
@@ -180,15 +187,14 @@ public class UserDAO {
     }
 
     // --- 店舗管理 ---
-    // ★ int から long に変更
     public User_Store getStoreById(long id) throws Exception {
         String sql = "SELECT * FROM STORE WHERE STORE_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, id); // ★ setLong
+            ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getLong("STORE_ID")); // ★ getLong
+                s.setStoreId(rs.getLong("STORE_ID"));
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 return s;
@@ -205,7 +211,7 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getLong("STORE_ID")); // ★ getLong
+                s.setStoreId(rs.getLong("STORE_ID"));
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 list.add(s);
@@ -240,7 +246,7 @@ public class UserDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 User_Store s = new User_Store();
-                s.setStoreId(rs.getLong("STORE_ID")); // ★ ここでエラーが出ていた箇所の修正：getLong
+                s.setStoreId(rs.getLong("STORE_ID"));
                 s.setStoreName(rs.getString("STORE_NAME"));
                 s.setStoreAddress(rs.getString("STORE_ADDRESS"));
                 list.add(s);
