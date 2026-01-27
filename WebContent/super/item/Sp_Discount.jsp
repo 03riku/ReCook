@@ -162,7 +162,7 @@ body { background-color: #F5F5F0; }
                                             <div class="btn-group">
                                                 <button type="submit" name="action" value="update" class="btn btn-sm btn-success">更新</button>
                                                 <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('値引きを解除しますか？')">解除</button>
+                                                        onclick="return confirm('値引きを解除しますか？')">削除</button>
                                             </div>
                                         </td>
                                     </form>
