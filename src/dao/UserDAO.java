@@ -115,34 +115,47 @@ public class UserDAO {
         String sql = "SELECT * FROM COOK_MENU WHERE GENRE_ID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, genreId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                CookMenu menu = new CookMenu();
-                fillCookMenu(menu, rs);
-                list.add(menu);
+            // 画像でエラーが出ていた箇所の修正：ResultSet rs = ps.executeQuery()
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CookMenu menu = new CookMenu();
+                    fillCookMenu(menu, rs);
+                    list.add(menu);
+                }
             }
         }
         return list;
     }
 
-    // ★ 修正箇所: クーポン期間内のメニューのみ取得
+    // ★ 修正箇所: 予定されているクーポン料理も表示し、時間を取得する
     public List<CookMenu> getMenusByStoreId(long storeId) throws Exception {
         List<CookMenu> list = new ArrayList<>();
 
-        // COUPONテーブルを結合し、現在時刻が開始〜終了の間にあるレコードに限定する
-        String sql = "SELECT DISTINCT c.* FROM COOK_MENU c " +
+        // SQL修正:
+        // 1. START_TIME, END_TIME を両方取得
+        // 2. 開始時間の制限をなくし、未来のものも取得。ただし終了したものは除外(END_TIME >= NOW)。
+        String sql = "SELECT DISTINCT c.*, cp.START_TIME, cp.END_TIME FROM COOK_MENU c " +
                      "JOIN COUPON cp ON c.MENU_ITEM_ID = cp.MENU_ITEM_ID " +
                      "WHERE cp.STORE_ID = ? " +
-                     "AND cp.START_TIME <= CURRENT_TIMESTAMP " +
-                     "AND cp.END_TIME >= CURRENT_TIMESTAMP";
+                     "AND cp.END_TIME >= CURRENT_TIMESTAMP " +
+                     "ORDER BY cp.START_TIME ASC";
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, storeId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                CookMenu menu = new CookMenu();
-                fillCookMenu(menu, rs);
-                list.add(menu);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CookMenu menu = new CookMenu();
+                    fillCookMenu(menu, rs);
+
+                    // 開始時間と終了時間をBeanにセット (比較用に yyyy-MM-dd HH:mm 形式)
+                    String rawStart = rs.getString("START_TIME");
+                    String rawEnd = rs.getString("END_TIME");
+
+                    if (rawStart != null) menu.setStartTime(rawStart.substring(0, 16));
+                    if (rawEnd != null) menu.setEndTime(rawEnd.substring(0, 16));
+
+                    list.add(menu);
+                }
             }
         }
         return list;

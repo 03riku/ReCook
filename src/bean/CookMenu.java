@@ -13,10 +13,13 @@ public class CookMenu implements Serializable {
 
     // --- 表示用の追加属性 ---
     private String genreName;
-    private String image;           // データベースの image 列の値
-    private int favoriteId;         // 1:未登録, 2:登録済み
+    private String image;
+    private int favoriteId;
 
-    // ★ List<String> から List<Product> に変更しました
+    // ★追加: クーポン開始時間と終了時間
+    private String startTime;
+    private String endTime;
+
     private List<Product> productList = new ArrayList<>();
 
     public CookMenu() {}
@@ -46,13 +49,13 @@ public class CookMenu implements Serializable {
     public int getFavoriteId() { return favoriteId; }
     public void setFavoriteId(int favoriteId) { this.favoriteId = favoriteId; }
 
-    // ★ ゲッターの戻り値を List<Product> に変更
-    public List<Product> getProductList() {
-        return productList;
-    }
+    // ★追加: startTime, endTimeのゲッター・セッター
+    public String getStartTime() { return startTime; }
+    public void setStartTime(String startTime) { this.startTime = startTime; }
 
-    // ★ セッターの引数を List<Product> に変更
-    public void setProductList(List<Product> productList) {
-        this.productList = productList;
-    }
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+
+    public List<Product> getProductList() { return productList; }
+    public void setProductList(List<Product> productList) { this.productList = productList; }
 }

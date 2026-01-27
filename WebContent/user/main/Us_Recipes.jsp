@@ -1,20 +1,27 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%-- ★追加：現在時刻取得および比較用 --%>
+<%@ page import="java.time.LocalDateTime" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+    // 文字化け防止
+    request.setCharacterEncoding("UTF-8");
+    // 現在時刻を yyyy-MM-dd HH:mm 形式で取得し、JSTLで使えるようにセット
+    String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    request.setAttribute("nowTime", now);
+%>
 
-<%-- 文字化け防止の設定 --%>
-<% request.setCharacterEncoding("UTF-8"); %>
-
-<%-- 1. ページタイトルの設定：サーブレット（Java）から送られてきたタイトルを表示 --%>
+<%-- 1. ページタイトルの設定 --%>
 <c:set var="pageTitle" value="${pageTitle}" scope="request" />
 
 <%-- 2. ページの中身（pageBody）の開始 --%>
 <c:set var="pageBody" scope="request">
     <style>
-        /* --- デザイン（CSS）の設定 --- */
-        body { background: rgb(238, 237, 234) !important; } /* 全体の背景色 */
-        .page-header { background-color: #d9ead3 !important; } /* 料理提案系のテーマカラー（緑） */
+        /* --- デザイン設定 --- */
+        body { background: rgb(238, 237, 234) !important; }
+        .page-header { background-color: #d9ead3 !important; }
 
-        /* ヘッダーバー：戻るボタンとタイトルの固定表示設定 */
+        /* ヘッダーバー */
         .header-bar {
             display: flex; align-items: center; padding: 10px;
             background: #fff; border-bottom: 1px solid #ddd;
@@ -22,45 +29,36 @@
         }
         .back-btn { font-size: 1.5rem; color: #333; text-decoration: none; margin-right: 15px; }
 
-        /* 料理カード（1項目分）の枠のデザイン */
+        /* 料理カード */
         .recipe-item {
-            border: 2px solid #000;      /* 黒い太枠 */
-            border-radius: 10px;         /* カドを丸く */
+            border: 2px solid #000;
+            border-radius: 10px;
             padding: 12px 0;
             margin: 10px 0;
-            background: #fff;            /* カードの中は白 */
+            background: #fff;
             transition: background-color 0.2s;
         }
-        .recipe-item:hover { background-color: #f8f9fa; } /* 触れた時に少し色を変える */
+        .recipe-item:hover { background-color: #f8f9fa; }
         .recipe-link { text-decoration: none; color: #333; display: block; }
 
-        /* 画像を表示する四角いエリアの設定 */
+        /* 画像ボックス */
         .recipe-img-box {
-            width: 100%;
-            height: 100px;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 5px;
+            width: 100%; height: 100px; background: #f0f0f0;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border-radius: 5px;
         }
-        .recipe-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 枠に合わせて画像を綺麗に収める */
-        }
+        .recipe-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 説明文が長すぎる場合に2行で省略する設定 */
+        /* テキスト省略 */
         .text-truncate-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: 0.85rem;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem;
         }
 
-        /* 下部メニューの装飾設定（ホバーで線が出るアニメーション） */
+        /* 状態ラベル */
+        .status-badge { font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
+
+        /* 下部ナビゲーション */
         .bottom-nav a { position: relative; padding-bottom: 10px; }
         .bottom-nav a::after {
             content: ""; position: absolute; left: 50%; bottom: 2px;
@@ -68,10 +66,7 @@
             transform: translateX(-50%) scaleX(0); transform-origin: center;
             border-radius: 2px; transition: transform 0.15s ease;
         }
-        .bottom-nav a:hover::after,
-        .bottom-nav a.active::after { transform: translateX(-50%) scaleX(1) !important; }
-
-        /* ナビゲーションの各メニューの色分け */
+        .bottom-nav a:hover::after, .bottom-nav a.active::after { transform: translateX(-50%) scaleX(1) !important; }
         .bottom-nav a.bar-home    { --bar-color:#ffe5d9; }
         .bottom-nav a.bar-search  { --bar-color:#c9daf8; }
         .bottom-nav a.bar-recipe  { --bar-color:#d9ead3; }
@@ -79,7 +74,7 @@
         .bottom-nav a.bar-account { --bar-color:#ead1dc; }
     </style>
 
-    <%-- 3. 画面上部：戻るボタンと、タイトル＋件数の表示 --%>
+    <%-- 3. 画面上部：戻るボタンとタイトル --%>
     <div class="header-bar">
         <a href="javascript:history.back();" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <h5 class="mb-0 fw-bold">${pageTitle} (${menuList.size()}件)</h5>
@@ -88,21 +83,31 @@
     <%-- 4. 料理リストの表示エリア --%>
     <div class="container py-2" style="max-width: 500px;">
         <div class="px-2">
-            <%-- Javaから届いた「menuList」を1つずつ取り出して「item」としてループ処理 --%>
             <c:forEach var="item" items="${menuList}">
-                <%-- 詳細画面（User_MenuDetailServlet）へのリンク --%>
-                <a href="${pageContext.request.contextPath}/user/MenuDetail?id=${item.menuItemId}&fromStore=${fromStore}" class="recipe-link">
+
+                <%-- ★ 状態判定: 現在時刻が開始時間以降なら表示中、そうでなければ予定 --%>
+                <c:set var="isLive" value="${nowTime >= item.startTime}" />
+
+                <%-- ★ 修正箇所: 表示中なら詳細へのリンクを貼る。予定ならDIVにしてクリック不可にする。 --%>
+                <c:choose>
+                    <c:when test="${isLive}">
+                        <a href="${pageContext.request.contextPath}/user/MenuDetail?id=${item.menuItemId}&fromStore=${fromStore}" class="recipe-link">
+                    </c:when>
+                    <c:otherwise>
+                        <%-- 予定(isLive=false)の時はリンクなし。薄く表示し、クリック不可(not-allowed)に設定 --%>
+                        <div class="recipe-link" style="opacity: 0.7; cursor: not-allowed;">
+                    </c:otherwise>
+                </c:choose>
+
                     <div class="row g-0 recipe-item shadow-sm">
 
-                        <%-- 左側：料理画像部分 --%>
+                        <%-- 左側：料理画像 --%>
                         <div class="col-4 px-2">
                             <div class="recipe-img-box border">
                                 <c:choose>
-                                    <%-- 画像データがある場合は画像を表示 --%>
                                     <c:when test="${not empty item.image}">
                                         <img src="${pageContext.request.contextPath}/pic/${item.image}" alt="${item.dishName}">
                                     </c:when>
-                                    <%-- 画像がない場合はフォークとナイフのアイコンを表示 --%>
                                     <c:otherwise>
                                         <i class="fas fa-utensils fa-2x text-muted"></i>
                                     </c:otherwise>
@@ -110,34 +115,66 @@
                             </div>
                         </div>
 
-                        <%-- 右側：料理の情報（名前、時間、説明文） --%>
+                        <%-- 右側：料理の情報 --%>
                         <div class="col-8 px-2 text-start">
-                            <div class="fw-bold mb-1">${item.dishName}</div>
-                            <div class="text-muted small mb-1">
-                                <i class="far fa-clock"></i> 調理時間 ${item.cookTime}分
+                            <div class="fw-bold mb-1">
+                                <%-- 状態ラベル表示 --%>
+                                <c:choose>
+                                    <c:when test="${isLive}">
+                                        <span class="status-badge bg-success text-white">表示中</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="status-badge bg-primary text-white">予定</span>
+                                    </c:otherwise>
+                                </c:choose>
+                                ${item.dishName}
                             </div>
+
+                            <div class="text-muted small mb-1">
+                                <i class="far fa-clock"></i> ${item.cookTime}分
+
+                                <%-- ★ クーポン終了時間を表示 --%>
+                                <c:if test="${not empty item.endTime}">
+                                    <span class="ms-1 text-danger fw-bold">
+                                        <i class="far fa-calendar-times"></i> ～${item.endTime.substring(5,16).replace("-","/")}まで
+                                    </span>
+                                </c:if>
+                            </div>
+
                             <div class="text-secondary text-truncate-2">
                                 ${item.description}
                             </div>
+
+                            <%-- ★ 予定(isLive=false)の場合のみ開始時間をガイド表示 --%>
+                            <c:if test="${!isLive}">
+                                <div class="mt-1 small text-primary fw-bold">
+                                    <i class="fas fa-info-circle"></i> ${item.startTime.substring(5,16).replace("-","/")} から開始
+                                </div>
+                            </c:if>
                         </div>
                     </div>
-                </a>
+
+                <%-- 閉じタグの出し分け --%>
+                <c:choose>
+                    <c:when test="${isLive}"></a></c:when>
+                    <c:otherwise></div></c:otherwise>
+                </c:choose>
+
             </c:forEach>
         </div>
 
-        <%-- 5. もしリストが空っぽだった場合の表示 --%>
+        <%-- リストが空の場合 --%>
         <c:if test="${empty menuList}">
             <div class="py-5 text-center text-muted">
                 <i class="fas fa-search fa-3x mb-3"></i>
-                <p>該当する料理が見つかりませんでした。</p>
+                <p>現在登録されているクーポン料理はありません。</p>
             </div>
         </c:if>
 
-        <%-- ナビに隠れないように下に余白を作る --%>
         <div style="height: 100px;"></div>
     </div>
 
-    <%-- 6. 下部固定ナビゲーション：画面下部のメニュー --%>
+    <%-- 5. 下部固定ナビゲーション --%>
     <nav class="fixed-bottom border-top bg-white d-flex justify-content-around py-2 bottom-nav">
         <a href="${pageContext.request.contextPath}/user/main/Us_Top.jsp" class="text-dark text-decoration-none text-center bar-home" style="min-width: 60px;">ホーム</a>
         <a href="${pageContext.request.contextPath}/user/main/Us_Search.jsp" class="text-dark text-decoration-none text-center bar-search active" style="min-width: 60px;">検索</a>
@@ -147,5 +184,5 @@
     </nav>
 </c:set>
 
-<%-- 土台となる base.jsp に上記の内容を流し込む --%>
+<%-- ベースJSPへ流し込み --%>
 <c:import url="/user/base.jsp" charEncoding="UTF-8" />
