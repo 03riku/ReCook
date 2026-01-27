@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import bean.CookMenu;
 import bean.DiscountedProduct;
@@ -17,12 +19,6 @@ public class StoreDao extends DAO {
     // ============================================================
     //  Login Method
     // ============================================================
-    /**
-     * 店舗ログイン処理
-     * @param storeId 店舗ID (BIGINT対応のため long)
-     * @param password パスワード
-     * @return 店舗名 (ログイン失敗時は null)
-     */
     public String loginStore(long storeId, String password) throws Exception {
         String storeName = null;
         String sql = "SELECT STORE_NAME FROM STORE WHERE STORE_ID = ? AND STORE_PASSWORD = ?";
@@ -30,7 +26,6 @@ public class StoreDao extends DAO {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            // ★ int ではなく long をセット
             ps.setLong(1, storeId);
             ps.setString(2, password);
 
@@ -80,7 +75,6 @@ public class StoreDao extends DAO {
                     cm = new CookMenu();
                     cm.setMenuItemId(rs.getInt("menu_item_id"));
                     cm.setDishName(rs.getString("dish_name"));
-                    // 必要に応じて他のフィールドもセット
                 }
             }
         }
@@ -88,7 +82,7 @@ public class StoreDao extends DAO {
     }
 
     // ============================================================
-    //  Coupon Related Methods
+    //  Coupon Related Methods (Insert)
     // ============================================================
 
     public int insertCoupon(int rate, long storeId, int menuItemId, String startTime, String endTime) throws Exception {
@@ -99,7 +93,7 @@ public class StoreDao extends DAO {
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, rate);
-            ps.setLong(2, storeId); // BIGINT対応
+            ps.setLong(2, storeId);
             ps.setInt(3, menuItemId);
             ps.setString(4, startTime);
             ps.setString(5, endTime);
@@ -130,7 +124,7 @@ public class StoreDao extends DAO {
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, storeId); // BIGINT対応
+            ps.setLong(1, storeId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     DiscountedProduct dp = new DiscountedProduct();
@@ -152,7 +146,7 @@ public class StoreDao extends DAO {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
-            ps.setLong(2, storeId); // BIGINT対応
+            ps.setLong(2, storeId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1) > 0;
             }
@@ -165,7 +159,7 @@ public class StoreDao extends DAO {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
-            ps.setLong(2, storeId); // BIGINT対応
+            ps.setLong(2, storeId);
             ps.setInt(3, rate);
             ps.executeUpdate();
         }
@@ -323,7 +317,7 @@ public class StoreDao extends DAO {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, menuId);
-            ps.setLong(2, storeId); // BIGINT対応
+            ps.setLong(2, storeId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Product p = new Product();
@@ -354,7 +348,7 @@ public class StoreDao extends DAO {
 
             try (PreparedStatement ps = conn.prepareStatement(sqlCalcPrice)) {
                 ps.setInt(1, menuItemId);
-                ps.setLong(2, storeId); // BIGINT対応
+                ps.setLong(2, storeId);
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     basePrice = rs.getInt("total_price");
@@ -370,7 +364,7 @@ public class StoreDao extends DAO {
             String sqlCheck = "SELECT store_menu_id FROM store_menu WHERE store_id = ? AND menu_item_id = ?";
 
             try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
-                psCheck.setLong(1, storeId); // BIGINT対応
+                psCheck.setLong(1, storeId);
                 psCheck.setInt(2, menuItemId);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (rs.next()) {
@@ -386,7 +380,7 @@ public class StoreDao extends DAO {
                 try (PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
                     psUpd.setInt(1, finalPrice);
                     psUpd.setInt(2, couponId);
-                    psUpd.setLong(3, storeId); // BIGINT対応
+                    psUpd.setLong(3, storeId);
                     psUpd.setInt(4, menuItemId);
                     psUpd.executeUpdate();
                 }
@@ -395,7 +389,7 @@ public class StoreDao extends DAO {
                 String sqlInsert = "INSERT INTO store_menu (price, store_id, menu_item_id, coupon_id) VALUES (?, ?, ?, ?)";
                 try (PreparedStatement psIns = conn.prepareStatement(sqlInsert)) {
                     psIns.setInt(1, finalPrice);
-                    psIns.setLong(2, storeId); // BIGINT対応
+                    psIns.setLong(2, storeId);
                     psIns.setInt(3, menuItemId);
                     psIns.setInt(4, couponId);
                     psIns.executeUpdate();
@@ -414,7 +408,7 @@ public class StoreDao extends DAO {
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, storeId); // BIGINT対応
+            ps.setLong(1, storeId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     StoreProduct sp = new StoreProduct();
@@ -435,7 +429,7 @@ public class StoreDao extends DAO {
                      "SELECT product_name, category, 0, ?, product_id FROM product WHERE product_id = ?";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, storeId); // BIGINT対応
+            ps.setLong(1, storeId);
             ps.setInt(2, productId);
             ps.executeUpdate();
         }
@@ -465,7 +459,140 @@ public class StoreDao extends DAO {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
-            ps.setLong(2, storeId); // BIGINT対応
+            ps.setLong(2, storeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    // ============================================================
+    //  List, Update, Delete Methods
+    // ============================================================
+
+    public List<Map<String, Object>> getRegisteredCoupons(long storeId) throws Exception {
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        String sql = "SELECT c.coupon_id, c.menu_item_id, cm.dish_name, c.discount_rate, c.start_time, c.end_time, sm.price " +
+                     "FROM coupon c " +
+                     "JOIN cook_menu cm ON c.menu_item_id = cm.menu_item_id " +
+                     "LEFT JOIN store_menu sm ON c.coupon_id = sm.coupon_id " +
+                     "WHERE c.store_id = ? " +
+                     "ORDER BY c.start_time DESC";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, storeId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("couponId", rs.getInt("coupon_id"));
+                    map.put("menuItemId", rs.getInt("menu_item_id"));
+                    map.put("dishName", rs.getString("dish_name"));
+                    map.put("discountRate", rs.getInt("discount_rate"));
+
+                    String start = rs.getString("start_time");
+                    String end = rs.getString("end_time");
+                    map.put("startTime", start != null ? start.replace(" ", "T").substring(0, 16) : "");
+                    map.put("endTime", end != null ? end.replace(" ", "T").substring(0, 16) : "");
+
+                    map.put("price", rs.getInt("price"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public void updateCouponAndMenu(int couponId, int rate, long storeId, int menuItemId, String startTime, String endTime) throws Exception {
+        try (Connection con = getConnection()) {
+            // 1. Update Coupon
+            String sqlCoupon = "UPDATE coupon SET discount_rate=?, start_time=?, end_time=? WHERE coupon_id=? AND store_id=?";
+            try (PreparedStatement ps = con.prepareStatement(sqlCoupon)) {
+                ps.setInt(1, rate);
+                ps.setString(2, startTime);
+                ps.setString(3, endTime);
+                ps.setInt(4, couponId);
+                ps.setLong(5, storeId);
+                ps.executeUpdate();
+            }
+
+            // 2. Recalculate Menu Price
+            int basePrice = 0;
+            String sqlCalc = "SELECT SUM(sp.price) as total FROM product_cook_menu pcm JOIN store_product sp ON pcm.product_id = sp.product_id WHERE pcm.menu_item_id = ? AND sp.store_id = ?";
+            try (PreparedStatement ps = con.prepareStatement(sqlCalc)) {
+                ps.setInt(1, menuItemId);
+                ps.setLong(2, storeId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) basePrice = rs.getInt("total");
+            }
+
+            int finalPrice = (int) (basePrice * (1.0 - (rate / 100.0)));
+
+            // Update StoreMenu
+            String sqlMenu = "UPDATE store_menu SET price=? WHERE coupon_id=?";
+            try (PreparedStatement ps = con.prepareStatement(sqlMenu)) {
+                ps.setInt(1, finalPrice);
+                ps.setInt(2, couponId);
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    public void deleteCouponAndResetMenu(int couponId, long storeId, int menuItemId) throws Exception {
+        try (Connection con = getConnection()) {
+
+            // 定価を取得
+            int basePrice = 0;
+            String sqlCalc = "SELECT SUM(sp.price) as total FROM product_cook_menu pcm JOIN store_product sp ON pcm.product_id = sp.product_id WHERE pcm.menu_item_id = ? AND sp.store_id = ?";
+            try (PreparedStatement ps = con.prepareStatement(sqlCalc)) {
+                ps.setInt(1, menuItemId);
+                ps.setLong(2, storeId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) basePrice = rs.getInt("total");
+            }
+
+            // store_menuのリセット
+            String sqlReset = "UPDATE store_menu SET price=?, coupon_id=NULL WHERE coupon_id=?";
+            try (PreparedStatement ps = con.prepareStatement(sqlReset)) {
+                ps.setInt(1, basePrice);
+                ps.setInt(2, couponId);
+                ps.executeUpdate();
+            }
+
+            // クーポン削除
+            String sqlDel = "DELETE FROM coupon WHERE coupon_id=? AND store_id=?";
+            try (PreparedStatement ps = con.prepareStatement(sqlDel)) {
+                ps.setInt(1, couponId);
+                ps.setLong(2, storeId);
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    /**
+     * ★新規追加: 時間重複チェック
+     */
+    public boolean isCouponTimeOverlapping(long storeId, int menuItemId, String startTime, String endTime, int currentCouponId) throws Exception {
+        // 重複条件: 「既存の開始時間 < 入力の終了時間」かつ「既存の終了時間 > 入力の開始時間」
+        // currentCouponId（更新中のID）は除外する
+        String sql = "SELECT COUNT(*) FROM coupon " +
+                     "WHERE store_id = ? AND menu_item_id = ? AND coupon_id != ? " +
+                     "AND start_time < ? AND end_time > ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, storeId);
+            ps.setInt(2, menuItemId);
+            ps.setInt(3, currentCouponId);
+            ps.setString(4, endTime);   // 入力終了時間
+            ps.setString(5, startTime); // 入力開始時間
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;

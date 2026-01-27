@@ -19,68 +19,86 @@ public class CouponRegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 文字化け防止
         request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
 
         try {
             // 1. セッションチェック
-            HttpSession session = request.getSession();
-
-            Long storeIdInt = (Long) session.getAttribute("store_id");
-
-            if (storeIdInt == null) {
+            Long storeIdObj = (Long) session.getAttribute("store_id");
+            if (storeIdObj == null) {
                 response.sendRedirect(request.getContextPath() + "/super/account/Sp_Login.jsp");
                 return;
             }
+            long storeId = storeIdObj.longValue();
 
-            // BIGINT対応のため long に変換
-            long storeId = storeIdInt.longValue();
+            // 2. アクションを取得
+            String action = request.getParameter("action");
+            if (action == null || action.isEmpty()) action = "register";
 
-            // 2. パラメータ取得
-            String rateStr = request.getParameter("discountRate");
-            String menuIdStr = request.getParameter("menuItemId");
-            String startStr = request.getParameter("startTime");
-            String endStr = request.getParameter("endTime");
-
-            // 3. バリデーション
-            if (rateStr == null || menuIdStr == null || startStr == null || endStr == null ||
-                rateStr.isEmpty() || menuIdStr.isEmpty() || startStr.isEmpty() || endStr.isEmpty()) {
-
-                session.setAttribute("errorMsg", "全ての項目を正しく入力してください。");
-                response.sendRedirect(request.getContextPath() + "/super/couponPage");
-                return;
-            }
-
-            int discountRate = Integer.parseInt(rateStr);
-            int menuItemId = Integer.parseInt(menuIdStr);
-
-            // 日時フォーマット調整 (YYYY-MM-DDTHH:mm -> YYYY-MM-DD HH:mm:00)
-            String startTime = startStr.replace("T", " ") + ":00";
-            String endTime = endStr.replace("T", " ") + ":00";
-
-            // ★ 修正箇所: StoreDao をインスタンス化
             StoreDao storeDao = new StoreDao();
 
-            // 4. クーポン登録処理
-            // 旧: couponDao.insert(...) -> 新: storeDao.insertCoupon(...)
-            int newCouponId = storeDao.insertCoupon(discountRate, storeId, menuItemId, startTime, endTime);
+            // 3. 共通パラメータ
+            String menuIdStr = request.getParameter("menuItemId");
+            String couponIdStr = request.getParameter("couponId");
 
-            // 5. メニュー価格更新処理
-            // 旧: menuDao.registerStoreMenu(...) -> 新: storeDao.registerStoreMenu(...)
-            // (registerStoreMenu は StoreDao にそのままの名前で統合しました)
-            storeDao.registerStoreMenu(storeId, menuItemId, newCouponId, discountRate);
+            int menuItemId = (menuIdStr != null && !menuIdStr.isEmpty()) ? Integer.parseInt(menuIdStr) : 0;
+            int couponId = (couponIdStr != null && !couponIdStr.isEmpty()) ? Integer.parseInt(couponIdStr) : 0;
 
-            // 6. 完了処理
-            session.setAttribute("successMsg", "クーポンを登録し、メニュー価格を更新しました。");
+            // --- 削除処理 ---
+            if ("delete".equals(action)) {
+                if (couponId > 0 && menuItemId > 0) {
+                    storeDao.deleteCouponAndResetMenu(couponId, storeId, menuItemId);
+                    session.setAttribute("successMsg", "クーポンを削除しました。");
+                } else {
+                    session.setAttribute("errorMsg", "削除対象が見つかりません。");
+                }
+            }
+            // --- 登録 / 更新処理 ---
+            else {
+                String rateStr = request.getParameter("discountRate");
+                String startStr = request.getParameter("startTime");
+                String endStr = request.getParameter("endTime");
+
+                if (rateStr == null || startStr == null || endStr == null || rateStr.isEmpty()) {
+                    throw new IllegalArgumentException("必須項目が不足しています");
+                }
+
+                int discountRate = Integer.parseInt(rateStr);
+
+                // 日時フォーマット整形
+                String startTime = startStr.replace("T", " ") + (startStr.length() <= 16 ? ":00" : "");
+                String endTime = endStr.replace("T", " ") + (endStr.length() <= 16 ? ":00" : "");
+
+                // ★追加: 時間重複チェック
+                if (storeDao.isCouponTimeOverlapping(storeId, menuItemId, startTime, endTime, couponId)) {
+                    session.setAttribute("errorMsg", "この料理は選択された時間に既に存在しています。");
+                    response.sendRedirect(request.getContextPath() + "/super/couponPage");
+                    return;
+                }
+
+                if ("update".equals(action)) {
+                    // 更新実行
+                    if (couponId > 0) {
+                        storeDao.updateCouponAndMenu(couponId, discountRate, storeId, menuItemId, startTime, endTime);
+                        session.setAttribute("successMsg", "クーポン情報を更新しました。");
+                    }
+                } else {
+                    // 新規登録実行
+                    int newId = storeDao.insertCoupon(discountRate, storeId, menuItemId, startTime, endTime);
+                    storeDao.registerStoreMenu(storeId, menuItemId, newId, discountRate);
+                    session.setAttribute("successMsg", "新しいクーポンを登録しました。");
+                }
+            }
+
             response.sendRedirect(request.getContextPath() + "/super/couponPage");
 
         } catch (NumberFormatException e) {
-            request.getSession().setAttribute("errorMsg", "数値の入力が正しくありません。");
+            e.printStackTrace();
+            session.setAttribute("errorMsg", "数値の入力が正しくありません。");
             response.sendRedirect(request.getContextPath() + "/super/couponPage");
         } catch (Exception e) {
             e.printStackTrace();
-            // エラー発生時はコンソールに出しつつ、エラー画面や一覧へ
-            request.getSession().setAttribute("errorMsg", "システムエラーが発生しました。");
+            session.setAttribute("errorMsg", "システムエラーが発生しました: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/super/couponPage");
         }
     }
