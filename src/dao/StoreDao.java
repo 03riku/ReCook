@@ -306,8 +306,15 @@ public class StoreDao extends DAO {
         return list;
     }
 
+    // ============================================================
+    //  ★【修正】料理に含まれる具材とその価格を取得
+    //  Servlet(GetIngredientsServlet)から呼ばれるメソッド
+    //  DBテーブルは product_cook_menu, store_product を使用
+    // ============================================================
     public List<Product> getIngredientsWithPrice(int menuId, long storeId) throws Exception {
         List<Product> list = new ArrayList<>();
+        // product_cook_menu: 料理と具材の紐付けテーブル
+        // store_product: 店舗ごとの商品価格テーブル
         String sql = "SELECT p.product_name, sp.price " +
                      "FROM product p " +
                      "JOIN product_cook_menu pcm ON p.product_id = pcm.product_id " +
@@ -320,6 +327,8 @@ public class StoreDao extends DAO {
             ps.setLong(2, storeId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                    // もし Product クラスに setPrice がない場合は、
+                    // StoreProduct を使うようにServletとこの部分を変更してください。
                     Product p = new Product();
                     p.setProductName(rs.getString("product_name"));
                     p.setPrice(rs.getInt("price"));
@@ -601,7 +610,7 @@ public class StoreDao extends DAO {
     }
 
     // ============================================================
-    //  ★【追加】期限切れクーポンの自動削除
+    //  期限切れクーポンの自動削除
     // ============================================================
     public void deleteExpiredCoupons() throws Exception {
         // 現在時刻を過ぎているクーポンを検索

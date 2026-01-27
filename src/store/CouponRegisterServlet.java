@@ -65,9 +65,19 @@ public class CouponRegisterServlet extends HttpServlet {
 
                 int discountRate = Integer.parseInt(rateStr);
 
-                // 日時フォーマット整形
+                // 日時フォーマット整形 (YYYY-MM-DDTHH:mm -> YYYY-MM-DD HH:mm:ss)
                 String startTime = startStr.replace("T", " ") + (startStr.length() <= 16 ? ":00" : "");
                 String endTime = endStr.replace("T", " ") + (endStr.length() <= 16 ? ":00" : "");
+
+                // ============================================================
+                // ★【追加】開始日時と終了日時の順序チェック
+                // 文字列比較で startTime >= endTime の場合はエラーとする
+                // ============================================================
+                if (startTime.compareTo(endTime) >= 0) {
+                    session.setAttribute("errorMsg", "終了日時は開始日時より未来の日時を設定してください。");
+                    response.sendRedirect(request.getContextPath() + "/super/couponPage");
+                    return;
+                }
 
                 // ★追加: 時間重複チェック
                 if (storeDao.isCouponTimeOverlapping(storeId, menuItemId, startTime, endTime, couponId)) {
