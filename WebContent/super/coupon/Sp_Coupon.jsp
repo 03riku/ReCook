@@ -68,7 +68,7 @@
 </head>
 <body>
 
-    <!-- サイドバー (変更なし) -->
+    <!-- サイドバー -->
     <div class="sidebar">
         <div class="logo">
             <img src="<%= request.getContextPath() %>/pic/recook_logo.png" alt="Re.Cook Logo" style="width: 200px;">
@@ -193,6 +193,7 @@
                                 </button>
                             </div>
                             <div class="col-6">
+                                <!-- formnovalidateを追加し、削除時はHTML5バリデーションを無視 -->
                                 <button type="submit" onclick="setAction('delete')" class="btn btn-outline-danger w-100 py-2" formnovalidate>
                                     <i class="bi bi-trash"></i> 削除
                                 </button>
@@ -290,7 +291,6 @@
                     totalDisp.textContent = '0';
                     currentTotal = 0;
                 }
-                // 原価が変わったので最終価格も再計算
                 updateFinalPrice();
             })
             .catch(err => {
@@ -313,50 +313,31 @@
         }
     }
 
-    // --- 新規追加部分: リスト選択時の処理 ---
+    // --- リスト選択時の処理 ---
     function selectCoupon(couponId, menuItemId, rate, startTime, endTime) {
-        // 1. フォームの値をセット
         document.getElementById('formCouponId').value = couponId;
         document.getElementById('menuSelector').value = menuItemId;
         document.getElementById('discountRate').value = rate;
         document.getElementById('startTime').value = startTime;
         document.getElementById('endTime').value = endTime;
 
-        // 2. メニュー選択イベントを手動発火させて具材と価格をロード
-        // (ロード完了後にupdateFinalPriceが呼ばれるので価格は自動計算される)
+        // メニュー選択イベントを手動発火
         const event = new Event('change');
         document.getElementById('menuSelector').dispatchEvent(event);
 
-        // 3. モード切替（ボタン表示変更）
-        document.getElementById('formAction').value = 'update'; // デフォルトは更新
+        // モード切替
+        document.getElementById('formAction').value = 'update';
         document.getElementById('btnRegister').classList.add('d-none');
         document.getElementById('btnUpdateDelete').classList.remove('d-none');
 
-        // 4. バッジ表示変更
         const badge = document.getElementById('modeBadge');
         badge.className = 'badge bg-primary';
         badge.textContent = '編集モード';
-
-        // 5. リストの見た目（Active状態）
-        // 全てのカードからactiveクラスを削除して、クリックされた要素に追加する処理があれば尚良し
     }
 
-    // 更新/削除ボタンを押したときにActionフィールドを書き換える
+    // ボタンクリック時にActionを設定
     function setAction(actionType) {
         document.getElementById('formAction').value = actionType;
-
-        if(actionType === 'delete') {
-            if(!confirm('本当にこのクーポンを削除しますか？')) {
-                // キャンセルの場合、送信を止めるために event.preventDefault() が必要だが
-                // onclickの中でreturn falseしてもform submitは止まらないため、
-                // ここでは簡易的に confirm 結果で判定したいが、submitボタンなので
-                // 実際は formの onsubmit でチェックするのが確実。
-                // 今回は簡易実装のため、キャンセルの場合はページ遷移を防ぐハックを入れるか、
-                // あるいはユーザーが必ずOKを押すと仮定。
-                // ★ 正確には以下のようにします：
-                event.preventDefault(); // 送信キャンセル
-            }
-        }
     }
 
     // 新規登録モードに戻す
@@ -365,22 +346,46 @@
         document.getElementById('formCouponId').value = "0";
         document.getElementById('formAction').value = "register";
 
-        // 具材リストクリア
         document.getElementById('ingredientTableBody').innerHTML = '<tr><td colspan="2" class="text-center text-muted py-4 small">料理を選択すると表示されます</td></tr>';
         document.getElementById('totalAmount').textContent = "0";
         document.getElementById('discountedPriceDisplay').value = "0";
 
-        // ボタン戻す
         document.getElementById('btnRegister').classList.remove('d-none');
         document.getElementById('btnUpdateDelete').classList.add('d-none');
 
-        // バッジ戻す
         const badge = document.getElementById('modeBadge');
         badge.className = 'badge bg-secondary';
         badge.textContent = '新規登録モード';
 
         currentTotal = 0;
     }
+
+    // ==========================================
+    // ★【追加・修正】フォーム送信時のバリデーション
+    // ==========================================
+    document.getElementById('couponForm').addEventListener('submit', function(e) {
+        const action = document.getElementById('formAction').value;
+
+        // 1. 削除の場合のチェック
+        if (action === 'delete') {
+            if (!confirm('本当にこのクーポンを削除しますか？')) {
+                e.preventDefault(); // キャンセル
+            }
+            return; // 削除なら時間チェックはスキップ
+        }
+
+        // 2. 登録・更新の場合の時間チェック
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+
+        if (startTime && endTime) {
+            // 文字列比較で十分判定可能です (ISOフォーマットの為)
+            if (startTime >= endTime) {
+                e.preventDefault(); // 送信を中止
+                alert("【エラー】\n終了日時は、開始日時より未来の日時を指定してください。");
+            }
+        }
+    });
     </script>
 </body>
 </html>
