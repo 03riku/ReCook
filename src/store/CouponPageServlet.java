@@ -2,7 +2,7 @@ package store;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map; // 追加
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -30,17 +30,23 @@ public class CouponPageServlet extends HttpServlet {
 
             StoreDao storeDao = new StoreDao();
 
-            // 具材リスト（不要であれば削除可、現在のロジックでは使われていませんが念のため維持）
+            // ============================================================
+            // ★【追加】期限切れクーポンの自動削除を実行
+            // データを取得する前に実行することで、画面には常に有効なものだけが出ます。
+            // ============================================================
+            storeDao.deleteExpiredCoupons();
+
+            // 具材リスト
             List<StoreProduct> ingredients = storeDao.findStoreProductsByStoreId(storeId);
             // 料理選択用メニューリスト
             List<CookMenu> menus = storeDao.selectAllCookMenus();
 
-            // ★追加: 登録済みクーポン一覧を取得
+            // 登録済みクーポン一覧を取得
             List<Map<String, Object>> couponList = storeDao.getRegisteredCoupons(storeId);
 
             req.setAttribute("ingredients", ingredients);
             req.setAttribute("menus", menus);
-            req.setAttribute("couponList", couponList); // ★JSPへ渡す
+            req.setAttribute("couponList", couponList);
 
             req.getRequestDispatcher("/super/coupon/Sp_Coupon.jsp").forward(req, resp);
 

@@ -576,11 +576,9 @@ public class StoreDao extends DAO {
     }
 
     /**
-     * ★新規追加: 時間重複チェック
+     * 時間重複チェック
      */
     public boolean isCouponTimeOverlapping(long storeId, int menuItemId, String startTime, String endTime, int currentCouponId) throws Exception {
-        // 重複条件: 「既存の開始時間 < 入力の終了時間」かつ「既存の終了時間 > 入力の開始時間」
-        // currentCouponId（更新中のID）は除外する
         String sql = "SELECT COUNT(*) FROM coupon " +
                      "WHERE store_id = ? AND menu_item_id = ? AND coupon_id != ? " +
                      "AND start_time < ? AND end_time > ?";
@@ -590,8 +588,8 @@ public class StoreDao extends DAO {
             ps.setLong(1, storeId);
             ps.setInt(2, menuItemId);
             ps.setInt(3, currentCouponId);
-            ps.setString(4, endTime);   // 入力終了時間
-            ps.setString(5, startTime); // 入力開始時間
+            ps.setString(4, endTime);
+            ps.setString(5, startTime);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -600,5 +598,28 @@ public class StoreDao extends DAO {
             }
         }
         return false;
+    }
+
+    // ============================================================
+    //  ★【追加】期限切れクーポンの自動削除
+    // ============================================================
+    public void deleteExpiredCoupons() throws Exception {
+        // 現在時刻を過ぎているクーポンを検索
+        String findSql = "SELECT coupon_id, store_id, menu_item_id FROM coupon WHERE end_time < CURRENT_TIMESTAMP";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(findSql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                int couponId = rs.getInt("coupon_id");
+                long storeId = rs.getLong("store_id");
+                int menuItemId = rs.getInt("menu_item_id");
+
+                // 既存の deleteCouponAndResetMenu を呼び出すことで
+                // クーポン削除と同時に販売価格を定価へ戻す
+                deleteCouponAndResetMenu(couponId, storeId, menuItemId);
+            }
+        }
     }
 }
