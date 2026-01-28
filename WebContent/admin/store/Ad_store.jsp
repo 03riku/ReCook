@@ -7,17 +7,23 @@
     // ==========================================
     // Body 1: 左カラム（店舗一覧リスト）生成
     // ==========================================
-    private String createBody1Content(List<String[]> stores, String contextPath) {
+    // 【変更点 1】: keyword 引数を追加して、検索ワードを保持できるようにする
+    private String createBody1Content(List<String[]> stores, String contextPath, String keyword) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<h4 class=\"mb-4 text-dark\">店舗一覧</h4>");
+
+        // 検索ワードのnull対策とエスケープ
+        String safeKeyword = (keyword == null) ? "" : keyword;
 
         // 検索フォーム
 		sb.append("<form action=\"").append(contextPath)
 				.append("/admin/store/StoreServlet\" method=\"get\" class=\"mb-4\">");
 		sb.append("<div class=\"input-group\">");
-		sb.append(
-				"<input type=\"text\" name=\"keyword\" class=\"form-control form-control-line\" placeholder=\"店舗名で検索...\">");
-		sb.append("<button class=\"btn btn-dark\" type=\"submit\">検索</button>");
+
+        // 【変更点 2】: value属性を追加して検索ワードを表示したままにする
+		sb.append("<input type=\"text\" name=\"keyword\" value=\"").append(safeKeyword).append("\" class=\"form-control form-control-line\" placeholder=\"店舗名で検索...\">");
+
+        sb.append("<button class=\"btn btn-dark\" type=\"submit\">検索</button>");
 		sb.append("</div></form>");
 
         // テーブル表示
@@ -31,7 +37,8 @@
 				sb.append("<span class=\"me-2\">・</span>").append(store[1]).append("</a></td></tr>");
 			}
 		} else {
-			sb.append("<tr><td class=\"text-center\">店舗が登録されていません。</td></tr>");
+            // 【変更点 3】: 検索結果がない場合（または初期状態）のメッセージを指定通りに変更
+			sb.append("<tr><td class=\"text-center text-muted py-3\">店舗登録されていません</td></tr>");
 		}
 		sb.append("</tbody></table></div>");
 		return sb.toString();
@@ -75,10 +82,8 @@
 			// 編集モード時: 元のIDと元の名前を保持（バリデーション用）
 			if (isEdit) {
 				sb.append("<input type=\"hidden\" name=\"oldStoreId\" value=\"").append(sel.getStoreId()).append("\">");
-                // 【重要】重複チェックの際、自分自身の名前を除外するために保持
                 sb.append("<input type=\"hidden\" id=\"originalStoreName\" value=\"").append(sel.getStoreName()).append("\">");
 			} else {
-                // 新規時は空
                 sb.append("<input type=\"hidden\" id=\"originalStoreName\" value=\"\">");
             }
 
@@ -159,11 +164,13 @@
 	Object msg = request.getAttribute("message");
 	String mode = (String) request.getAttribute("mode");
 
+    // 【変更点 4】: 検索キーワードを取得する
+    String keyword = request.getParameter("keyword");
+
     // JSでの重複チェック用に、全店舗名のリストをJSON配列文字列として生成する
     StringBuilder jsonStoreNames = new StringBuilder("[");
     if (storeList != null) {
         for (int i = 0; i < storeList.size(); i++) {
-            // 店舗名をエスケープして追加
             jsonStoreNames.append("\"").append(storeList.get(i)[1].replace("\"", "\\\"")).append("\"");
             if (i < storeList.size() - 1) {
                 jsonStoreNames.append(",");
@@ -172,7 +179,8 @@
     }
     jsonStoreNames.append("]");
 
-	request.setAttribute("pageContentBody1", createBody1Content(storeList, request.getContextPath()));
+    // 【変更点 5】: createBody1Content に keyword を渡す
+	request.setAttribute("pageContentBody1", createBody1Content(storeList, request.getContextPath(), keyword));
 	request.setAttribute("pageContentBody2", createBody2Content(request.getContextPath(), sel, msg, mode));
 %>
 
@@ -210,26 +218,20 @@
         const storeNameInput = document.getElementById('storeName');
         const nameError = document.getElementById('nameError');
         const nameVal = storeNameInput.value.trim();
-        // 編集モードの場合、変更前の名前を取得
         const originalName = document.getElementById('originalStoreName').value;
 
         nameError.style.display = 'none';
 
         if (nameVal !== "") {
-            // 入力された名前が既存リストに存在するか確認
             const isDuplicate = existingStoreNames.some(name => name === nameVal);
-
-            // 重複している場合
             if (isDuplicate) {
-                // ただし、「元の名前と同じ」場合はOK（編集で名前を変えなかった場合）
                 if (nameVal !== originalName) {
-                    nameError.style.display = 'block'; // エラーメッセージ表示
-                    if(isValid) storeNameInput.focus(); // IDエラーがなければこちらにフォーカス
+                    nameError.style.display = 'block';
+                    if(isValid) storeNameInput.focus();
                     isValid = false;
                 }
             }
         }
-
 		return isValid;
 	}
 </script>
