@@ -100,7 +100,7 @@ body { background-color: #F5F5F0; }
                 <form action="<%= request.getContextPath() %>/super/storeBulkUpdate" method="post" class="d-flex flex-column h-100">
                     <div class="table-header-area">
                         <h5 class="mb-0">自店舗商品一覧</h5>
-                        <button type="submit" class="btn btn-sm btn-success px-3">一括更新</button>
+                        <button type="submit" id="bulkUpdateBtn" class="btn btn-sm btn-success px-3">一括更新</button>
                     </div>
 
                     <div class="table-scroll-container">
@@ -146,5 +146,40 @@ body { background-color: #F5F5F0; }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 一括更新ボタンを取得
+    const bulkUpdateBtn = document.getElementById("bulkUpdateBtn");
+
+    if (bulkUpdateBtn) {
+        bulkUpdateBtn.addEventListener("click", function(event) {
+            // name="prices" の入力欄をすべて取得
+            const priceInputs = document.querySelectorAll('input[name="prices"]');
+            let hasError = false;
+
+            priceInputs.forEach(function(input) {
+                // 値が空かどうかチェック
+                if (input.value.trim() === "") {
+                    hasError = true;
+                    // エラーの入力欄を赤枠にする (Bootstrapのクラス)
+                    input.classList.add("is-invalid");
+                } else {
+                    // エラーがない場合は赤枠を外す
+                    input.classList.remove("is-invalid");
+                }
+            });
+
+            if (hasError) {
+                // 送信をキャンセル
+                event.preventDefault();
+                // メッセージを表示
+                alert("数字を入力してください。");
+            }
+        });
+    }
+});
+</script>
+
 </body>
 </html>
