@@ -27,7 +27,7 @@
         }
 
         .logo-img {
-            width: 380px; /* 指定のサイズ */
+            width: 380px;
             display: block;
             margin: 0 auto -80px auto;
             object-fit: cover;
@@ -43,7 +43,6 @@
             position: relative;
             top: -40px;
         }
-
 
         .login-title {
             font-size: 26px;
@@ -71,7 +70,7 @@
     <div class="login-card">
         <div class="login-title">店舗ログイン</div>
 
-        <%-- エラーメッセージの表示 (SuperLoginServletから受け取る) --%>
+        <%-- エラーメッセージ表示 --%>
         <%
             String msg = (String)request.getAttribute("errorMsg");
             if(msg != null) {
@@ -81,19 +80,44 @@
             </div>
         <% } %>
 
-        <%-- 店舗ログイン用サーブレットへのフォーム --%>
+        <%-- ログインフォーム --%>
         <form action="<%= request.getContextPath() %>/SuperLoginServlet" method="post">
             <div class="mb-3">
-                <input type="text" name="id" class="form-control" placeholder="店舗ID" required autofocus>
+                <input type="text"
+                       name="id"
+                       class="form-control"
+                       placeholder="店舗ID"
+                       required
+                       autofocus>
             </div>
+
             <div class="mb-3">
-                <input type="password" name="pass" class="form-control" placeholder="パスワード" required>
+                <!-- 日本語入力対応パスワード -->
+                <input type="text"
+                       id="password"
+                       name="pass"
+                       class="form-control"
+                       placeholder="パスワード"
+                       lang="ja"
+                       inputmode="text"
+                       required>
             </div>
+
             <button type="submit" class="btn btn-login">ログイン</button>
         </form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- パスワードを●表示にする -->
+<script>
+    const pwd = document.getElementById("password");
+    pwd.addEventListener("input", () => {
+        pwd.style.webkitTextSecurity = "disc"; // Chrome / Safari
+        pwd.style.textSecurity = "disc";        // 一部ブラウザ
+    });
+</script>
+
 </body>
 </html>
