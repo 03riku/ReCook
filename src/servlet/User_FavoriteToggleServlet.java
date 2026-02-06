@@ -12,44 +12,46 @@ import javax.servlet.http.HttpSession;
 import bean.GeneralUser;
 import dao.UserDAO;
 
-/**
- * お気に入りの登録・解除（トグル処理）を担当するサーブレット
- */
 @WebServlet("/user/User_FavoriteToggle")
 public class User_FavoriteToggleServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // セッションからログインユーザー情報を取得
         HttpSession session = request.getSession();
         GeneralUser user = (GeneralUser) session.getAttribute("loginUser");
 
+        // 未ログインなら401エラー（JavaScript側で判別可能）
         if (user == null) {
-            // ログインしていない場合はログイン画面へ
-            response.sendRedirect(request.getContextPath() + "/user/main/Us_Login.jsp");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        // 料理IDを取得
         String idStr = request.getParameter("id");
+        String ajax = request.getParameter("ajax"); // AJAXフラグ
+
         try {
             if (idStr != null) {
                 int menuItemId = Integer.parseInt(idStr);
                 UserDAO dao = new UserDAO();
 
-                // データベース側でお気に入りの有無を反転（トグル）させる
+                // お気に入り状態を反転
                 dao.toggleFavorite(user.getUserId(), menuItemId);
 
-                // ★ 詳細画面へリダイレクトして戻る
-                // User_MenuDetailServlet の設定URL (@WebServlet("/user/MenuDetail")) に合わせます
+                // ★ 非同期通信（AJAX）の場合、リダイレクトせずに「ok」とだけ返す
+                if ("true".equals(ajax)) {
+                    response.setContentType("text/plain");
+                    response.getWriter().write("ok");
+                    return;
+                }
+
+                // AJAXでなければ通常のリダイレクト（履歴を汚さないようタイムスタンプは削除）
                 response.sendRedirect("MenuDetail?id=" + menuItemId);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // エラー時はトップへ
-            response.sendRedirect("main/Us_Top.jsp");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }
